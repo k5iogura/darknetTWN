@@ -150,6 +150,7 @@ struct layer{
     int index;
     int binary;
     int xnor;
+    int ternary;
     int steps;
     int hidden;
     int truth;
@@ -235,6 +236,7 @@ struct layer{
     float * scales;
     float * scale_updates;
 
+    float * ternary_weights;
     float * weights;
     float * weight_updates;
 
@@ -377,6 +379,8 @@ struct layer{
 
     float * binary_input_gpu;
     float * binary_weights_gpu;
+
+    float * ternary_weights_gpu;
 
     float * mean_gpu;
     float * variance_gpu;
