@@ -198,6 +198,7 @@ void forward_network(network *netp)
     for(i = 0; i < net.n; ++i){
         net.index = i;
         layer l = net.layers[i];
+        if(!netp->train) l.ternary=0;   // ternarize when training only
         if(l.delta){
             fill_cpu(l.outputs * l.batch, 0, l.delta, 1);
         }
@@ -772,6 +773,7 @@ void forward_network_gpu(network *netp)
     for(i = 0; i < net.n; ++i){
         net.index = i;
         layer l = net.layers[i];
+        if(!netp->train) l.ternary=0;   // ternarize when training only
         if(l.delta_gpu){
             fill_gpu(l.outputs * l.batch, 0, l.delta_gpu, 1);
         }

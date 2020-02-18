@@ -291,9 +291,6 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
             l.binary_weights_gpu = cuda_make_array(l.weights, l.nweights);
             l.binary_input_gpu = cuda_make_array(0, l.inputs*l.batch);
         }
-        if(ternary){
-            l.ternary_weights_gpu = cuda_make_array(l.weights, l.nweights);
-        }
 
         if(batch_normalize){
             l.mean_gpu = cuda_make_array(l.mean, n);
@@ -482,9 +479,7 @@ void forward_convolutional_layer(convolutional_layer l, network net)
             }else
                 l.ternary_weights[i] = 0.0;
         }
-        for(i=0;i<nweights;i++){
-            l.weights[i] = l.ternary_weights[i];
-        }
+        memcpy(l.weights, l.ternary_weights, nweights*sizeof(float));
         printf("Wmean = %f th = %f Wl = %f pos/neg/all = %d/%d/%d\n",w_mean, ternarize_th, Wl, posWl, negWl,nweights);
     }
 

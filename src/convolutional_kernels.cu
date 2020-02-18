@@ -84,6 +84,34 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network net)
         binarize_gpu(net.input_gpu, l.c*l.h*l.w*l.batch, l.binary_input_gpu);
         net.input_gpu = l.binary_input_gpu;
     }
+    if(l.ternary){  // Ternarize weights
+        int i;
+        float w_mean = 0.0, ternarize_th = 0.0, Wl = 0.0;
+        int Wl_n=0, posWl=0, negWl=0;
+        int nweights = l.n*l.c/l.groups*l.size*l.size;
+        cuda_pull_array(l.weights_gpu, l.weights, nweights);
+        for(i=0;i<nweights;i++) w_mean+=fabs(l.weights[i]);
+        w_mean /=(float)nweights;
+        ternarize_th = 0.7*w_mean;
+        for(i=0;i<nweights;i++){
+            float Wabs = fabs(l.weights[i]);
+            if (Wabs > ternarize_th){
+                Wl += Wabs;
+                Wl_n++;
+            }
+        }
+        Wl /= (float)Wl_n;
+        for(i=0;i<nweights;i++){
+            if(l.weights[i] > ternarize_th){
+                l.ternary_weights[i] = Wl; posWl++;
+            }else if(l.weights[i] < -ternarize_th){
+                l.ternary_weights[i] = -Wl;negWl++;
+            }else
+                l.ternary_weights[i] = 0.0;
+        }
+        cuda_push_array(l.weights_gpu, l.ternary_weights, nweights);
+        printf("Wmean = %f th = %f Wl = %f pos/neg/all = %d/%d/%d\n",w_mean, ternarize_th, Wl, posWl, negWl,nweights);
+    }
 
 #ifdef CUDNN
     float one = 1;
