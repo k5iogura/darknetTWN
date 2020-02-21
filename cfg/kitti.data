@@ -1,6 +1,6 @@
 classes= 7
-train  = /home/20076433/work/KITTI/train.txt
-valid  = /home/20076433/work/KITTI/val.txt
+train  = /home/20076433/work/KITTI/train.list
+valid  = /home/20076433/work/KITTI/val.list
 names  = data/kitti.names
 backup = backup_kitti
 
