@@ -110,7 +110,7 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network net)
                 l.ternary_weights[i] = 0.0;
         }
         cuda_push_array(l.weights_gpu, l.ternary_weights, nweights);
-        printf("Wmean = %f th = %f Wl = %f pos/neg/all = %d/%d/%d\n",w_mean, ternarize_th, Wl, posWl, negWl,nweights);
+        //printf("Wmean = %f th = %f Wl = %f pos/neg/all = %d/%d/%d\n",w_mean, ternarize_th, Wl, posWl, negWl,nweights);
     }
 
 #ifdef CUDNN
