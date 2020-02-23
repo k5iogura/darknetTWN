@@ -70,6 +70,32 @@ void binarize_weights_gpu(float *weights, int n, int size, float *binary)
     check_error(cudaPeekAtLastError());
 }
 
+void ternarize_weights(float *weights, int nweights, float *ternary_weights){
+    int i;
+    float w_mean = 0.0, ternarize_th = 0.0, Wl = 0.0;
+    int Wl_n=0, posWl=0, negWl=0;
+    for(i=0;i<nweights;i++) w_mean+=fabs(weights[i]);
+    w_mean /=(float)nweights;
+    ternarize_th = 0.7*w_mean;
+    for(i=0;i<nweights;i++){
+        float Wabs = fabs(weights[i]);
+        if (Wabs > ternarize_th){
+            Wl += Wabs;
+            Wl_n++;
+        }
+    }
+    Wl /= (float)Wl_n;
+    for(i=0;i<nweights;i++){
+        if(weights[i] > ternarize_th){
+            ternary_weights[i] = Wl; posWl++;
+        }else if(weights[i] < -ternarize_th){
+            ternary_weights[i] = -Wl;negWl++;
+        }else
+            ternary_weights[i] = 0.0;
+    }
+    //printf("Wmean = %f th = %f Wl = %f pos/neg/all = %d/%d/%d\n",w_mean, ternarize_th, Wl, posWl, negWl,nweights);
+}
+
 __global__ void ternarize_weights_kernel(float *weights, int n, int size, float *ternary_weights)
 {
     int f = (blockIdx.x + blockIdx.y*gridDim.x) * blockDim.x + threadIdx.x;
@@ -84,7 +110,7 @@ __global__ void ternarize_weights_kernel(float *weights, int n, int size, float 
     mean = mean / size;
     ternarize_th = 0.7*mean;
     for(i=0;i<size;i++){
-        float Wabs = fabsf(weights[i]);
+        float Wabs = fabsf(weights[f*size + i]);
         if (Wabs > ternarize_th){
             Wl += Wabs;
             Wl_n++;
@@ -100,11 +126,12 @@ __global__ void ternarize_weights_kernel(float *weights, int n, int size, float 
         }else
             ternary_weights[idx] = 0.0;
     }
+    //printf("Wmean = %f th = %f Wl = %f pos/neg/all = %d/%d/%d\n",mean, ternarize_th, Wl, posWl, negWl, size);
 }
 
 void ternarize_weights_gpu(float *weights, int n, int size, float *ternary_weights)
 {
-    binarize_weights_kernel<<<cuda_gridsize(n), BLOCK>>>(weights, n, size, ternary_weights);
+    ternarize_weights_kernel<<<cuda_gridsize(n), BLOCK>>>(weights, n, size, ternary_weights);
     check_error(cudaPeekAtLastError());
 }
 
@@ -123,14 +150,34 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network net)
         net.input_gpu = l.binary_input_gpu;
     }
     if(l.ternary){  // Ternarize weights
-        int nweights1ch = l.c/l.groups*l.size*l.size;
-        if(1){
+        int i, nweights1ch = l.c/l.groups*l.size*l.size;
+        if(0){
+            // Wl per a output-channel
+            cuda_pull_array(l.weights_gpu, l.weights, nweights1ch*l.n);
+            for(i=0;i<l.n;i++)
+                ternarize_weights(l.weights+i*nweights1ch, nweights1ch, l.ternary_weights+i*nweights1ch);
+            cuda_push_array(l.weights_gpu, l.ternary_weights, nweights1ch*l.n);
+        }else if(0){
+            // Wl per a layer
+            cuda_pull_array(l.weights_gpu, l.weights, nweights1ch*l.n);
+            ternarize_weights(l.weights, nweights1ch * l.n, l.ternary_weights);
+            cuda_push_array(l.weights_gpu, l.ternary_weights, nweights1ch*l.n);
+        }else if(1){
+            // Wl per a output-channel
             ternarize_weights_gpu(l.weights_gpu, l.n, nweights1ch, l.ternary_weights_gpu);
+            if (1)  // backward to FP-weights
+                swap_ternary(&l);
+            else    // backward to Ternary-weights
+                copy_gpu( nweights1ch * l.n, l.ternary_weights_gpu, 1, l.weights_gpu, 1);
         }else{
-            ternarize_weights_gpu(l.weights_gpu, 1, l.n*nweights1ch, l.ternary_weights_gpu);
+            // Wl per a layer
+            ternarize_weights_gpu(l.weights_gpu, 1, nweights1ch * l.n, l.ternary_weights_gpu);
+            copy_gpu( nweights1ch * l.n, l.ternary_weights_gpu, 1, l.weights_gpu, 1);
+            if (1)  // backward to FP-weights
+                swap_ternary(&l);
+            else    // backward to Ternary-weights
+                copy_gpu( nweights1ch * l.n, l.ternary_weights_gpu, 1, l.weights_gpu, 1);
         }
-        swap_ternary(&l);
-        //copy_gpu(l.n*nweights1ch, l.ternary_weights_gpu, 1, l.weights_gpu, 1);
     }
 
 #ifdef CUDNN
@@ -180,7 +227,8 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network net)
     activate_array_gpu(l.output_gpu, l.outputs*l.batch, l.activation);
     //if(l.dot > 0) dot_error_gpu(l);
     if(l.binary || l.xnor) swap_binary(&l);
-    //if(l.ternary) swap_ternary(&l);
+    if(1) // backward to FP-weights
+        if(l.ternary) swap_ternary(&l);
 }
 
 __global__ void smooth_kernel(float *x, int n, int w, int h, int c, int size, float rate, float *delta)

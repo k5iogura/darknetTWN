@@ -86,7 +86,7 @@ void ternarize_weights(float *weights, int nweights, float *ternary_weights){
         }else
             ternary_weights[i] = 0.0;
     }
-    //printf("Wmean = %f th = %f Wl = %f pos/neg/all = %d/%d/%d\n",w_mean, ternarize_th, Wl, posWl, negWl,nweights);
+    printf("Wmean = %f th = %f Wl = %f pos/neg/all = %d/%d/%d\n",w_mean, ternarize_th, Wl, posWl, negWl,nweights);
 }
 
 void swap_ternary(convolutional_layer *l)
@@ -233,7 +233,6 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
     l.batch_normalize = batch_normalize;
 
     l.weights = calloc(c/groups*n*size*size, sizeof(float));
-    l.ternary_weights = calloc(c/groups*n*size*size, sizeof(float)); // Workspace to Ternarize
     l.weight_updates = calloc(c/groups*n*size*size, sizeof(float));
 
     l.biases = calloc(n, sizeof(float));
@@ -270,6 +269,10 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
     if(xnor){
         l.binary_weights = calloc(l.nweights, sizeof(float));
         l.binary_input = calloc(l.inputs*l.batch, sizeof(float));
+    }
+    if(ternary){
+        l.ternary_weights = calloc(c/groups*n*size*size, sizeof(float)); // to Ternarize
+        l.ternary_scales  = calloc(n, sizeof(float));
     }
 
     if(batch_normalize){
@@ -332,6 +335,7 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
         }
         if(ternary){
             l.ternary_weights_gpu = cuda_make_array(l.weights, l.nweights);
+            l.ternary_scales_gpu  = cuda_make_array(l.ternary_scales, l.n);
         }
 
         if(batch_normalize){
