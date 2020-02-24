@@ -118,17 +118,21 @@ __global__ void check_ternary_weights_kernel(float *weights, int n, int size, fl
     if (f >= n) return;
     int i = 0;
     float fmax = -1.0e100, fmin = 1.0e100;
+    float fvalpos = 0, fvalneg = 0;
     for(i = 0; i < size; ++i){
         //float fvalue = fabsf(weights[f*size + i]);
         float fvalue = ternary_weights[f*size + i];
         fmax = ( fvalue > fmax)? fvalue:fmax;
         fmin = ( fvalue < fmin)? fvalue:fmin;
+        fvalpos = ( fvalpos == 0 && fvalue>0 )? fvalue : fvalpos;
+        fvalneg = ( fvalneg == 0 && fvalue<0 )? fvalue : fvalneg;
     }
     fmax = fabsf(fmax);
     fmin = fabsf(fmin);
     if(fmax!=0 && fmin!=0){
-        float diff = fmax-fmin;
-        assert(diff<1.0e-100);
+        fvalpos = fabsf(fvalpos);
+        fvalneg = fabsf(fvalneg);
+        assert(fmax == fmin && fmax == fvalpos && fvalpos == fvalneg);
     }
 }
 
