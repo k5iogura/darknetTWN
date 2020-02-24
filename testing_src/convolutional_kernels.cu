@@ -162,14 +162,14 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network net)
             cuda_pull_array(l.weights_gpu, l.weights, nweights1ch*l.n);
             ternarize_weights(l.weights, nweights1ch * l.n, l.ternary_weights);
             cuda_push_array(l.weights_gpu, l.ternary_weights, nweights1ch*l.n);
-        }else if(1){
+        }else if(0){
             // Wl per a output-channel
             ternarize_weights_gpu(l.weights_gpu, l.n, nweights1ch, l.ternary_weights_gpu);
             if (1)  // backward to FP-weights
                 swap_ternary(&l);
             else    // backward to Ternary-weights
                 copy_gpu( nweights1ch * l.n, l.ternary_weights_gpu, 1, l.weights_gpu, 1);
-        }else{
+        }else if(0){
             // Wl per a layer
             ternarize_weights_gpu(l.weights_gpu, 1, nweights1ch * l.n, l.ternary_weights_gpu);
             copy_gpu( nweights1ch * l.n, l.ternary_weights_gpu, 1, l.weights_gpu, 1);
@@ -177,6 +177,7 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network net)
                 swap_ternary(&l);
             else    // backward to Ternary-weights
                 copy_gpu( nweights1ch * l.n, l.ternary_weights_gpu, 1, l.weights_gpu, 1);
+        }else{
         }
     }
 
@@ -227,7 +228,7 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network net)
     activate_array_gpu(l.output_gpu, l.outputs*l.batch, l.activation);
     //if(l.dot > 0) dot_error_gpu(l);
     if(l.binary || l.xnor) swap_binary(&l);
-    if(1) // backward to FP-weights
+    if(0) // backward to FP-weights
         if(l.ternary) swap_ternary(&l);
 }
 
