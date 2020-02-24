@@ -117,18 +117,19 @@ __global__ void check_ternary_weights_kernel(float *weights, int n, int size, fl
     int f = (blockIdx.x + blockIdx.y*gridDim.x) * blockDim.x + threadIdx.x;
     if (f >= n) return;
     int i = 0;
-    float fmin1 = 1.0e100, fmax1 = -1.0e100, fmin2 = 1.0e100, fmax2 = -1.0e100;
+    float fmax = -1.0e100, fmin = 1.0e100;
     for(i = 0; i < size; ++i){
         //float fvalue = fabsf(weights[f*size + i]);
-        float fvalue = weights[f*size + i];
-        fmax1 = ( fvalue > fmax1)? fvalue : fmax1;
-        fmin1 = ( fvalue < fmin1)? fvalue : fmin1;
-        fmax2 = (-fvalue > fmax2)?-fvalue : fmax2;
-        fmin2 = (-fvalue < fmin2)?-fvalue : fmin2;
+        float fvalue = ternary_weights[f*size + i];
+        fmax = ( fvalue > fmax)? fvalue:fmax;
+        fmin = ( fvalue < fmin)? fvalue:fmin;
     }
-    assert(fmin1 == -fmax2);
-    assert(fmax1 == -fmin2);
-    //printf("ch-%d %f %f %f %f\n", n, fmax1, fmin1, fmax2, fmin2);
+    fmax = fabsf(fmax);
+    fmin = fabsf(fmin);
+    if(fmax!=0 && fmin!=0){
+        float diff = fmax-fmin;
+        assert(diff<1.0e-100);
+    }
 }
 
 void check_ternary_weights_gpu(float *weights, int n, int size, float *ternary_weights)
