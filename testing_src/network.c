@@ -198,7 +198,15 @@ void forward_network(network *netp)
     for(i = 0; i < net.n; ++i){
         net.index = i;
         layer l = net.layers[i];
-        if(!netp->train) l.ternary=0;   // ternarize when training only
+        if(!netp->train) l.ternary=0;   // Ternary: ternarize when training only
+        if(l.ternary){                  // Ternary: next swap_ternary run before update_network
+            int nweights1ch = l.c/l.groups*l.size*l.size;
+            if(1)
+                ternarize_weights(l.weights, l.n, nweights1ch, l.ternary_weights);     // Ternary: output-wise
+            else if(0)
+                ternarize_weights(l.weights, 1, l.n * nweights1ch, l.ternary_weights); // Ternary: layer-wise
+            swap_ternary(&l);
+        }
         if(l.delta){
             fill_cpu(l.outputs * l.batch, 0, l.delta, 1);
         }
@@ -235,6 +243,9 @@ void update_network(network *netp)
 
     for(i = 0; i < net.n; ++i){
         layer l = net.layers[i];
+        if(l.ternary){          // Ternary: update ternary weights
+            swap_ternary(&l);
+        }
         if(l.update){
             l.update(l, a);
         }
@@ -773,7 +784,17 @@ void forward_network_gpu(network *netp)
     for(i = 0; i < net.n; ++i){
         net.index = i;
         layer l = net.layers[i];
-        if(!netp->train) l.ternary=0;   // ternarize when training only
+        if(!netp->train) l.ternary=0;   // Ternary: ternarize when training only
+        if(l.ternary){                  // Ternary: next swap_ternary run before update_network
+            int nweights1ch = l.c/l.groups*l.size*l.size;
+            if (1)
+                ternarize_weights_gpu(l.weights_gpu, l.n, nweights1ch, l.ternary_weights_gpu);     //Ternary: output-wise
+                //check_ternary_weights_gpu(l.weights, l.n, nweights1ch, l.ternary_weights);
+            else if(0)
+                ternarize_weights_gpu(l.weights_gpu, 1, l.n * nweights1ch, l.ternary_weights_gpu); //Ternary: layer-wise
+                //check_ternary_weights_gpu(l.weights_gpu, 1, l.n * nweights1ch, l.ternary_weights_gpu);
+            swap_ternary(&l);
+        }
         if(l.delta_gpu){
             fill_gpu(l.outputs * l.batch, 0, l.delta_gpu, 1);
         }
@@ -831,11 +852,12 @@ void update_network_gpu(network *netp)
 
     for(i = 0; i < net.n; ++i){
         layer l = net.layers[i];
-        if(l.ternary) swap_ternary(&l);
+        if(l.ternary){          // Ternary: update ternary weights
+            swap_ternary(&l);
+        }
         if(l.update_gpu){
             l.update_gpu(l, a);
         }
-        if(l.ternary) swap_ternary(&l);
     }
 }
 

@@ -32,6 +32,8 @@ void update_convolutional_layer(convolutional_layer layer, update_args a);
 image *visualize_convolutional_layer(convolutional_layer layer, char *window, image *prev_weights);
 void binarize_weights(float *weights, int n, int size, float *binary);
 void ternarize_weights_gpu(float *weights, int n, int size, float *ternary_weights);
+void ternarize_weights(float *weights, int n, int size, float *ternary_weights);
+void check_ternary_weights_gpu(float *weights, int n, int size, float *ternary_weights);
 void swap_binary(convolutional_layer *l);
 void swap_ternary(convolutional_layer *l);
 void binarize_weights2(float *weights, int n, int size, char *binary, float *scales);

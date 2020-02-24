@@ -1,3 +1,4 @@
+#include <assert.h>
 #include "cuda_runtime.h"
 #include "curand.h"
 #include "cublas_v2.h"
@@ -70,32 +71,6 @@ void binarize_weights_gpu(float *weights, int n, int size, float *binary)
     check_error(cudaPeekAtLastError());
 }
 
-void ternarize_weights(float *weights, int nweights, float *ternary_weights){
-    int i;
-    float w_mean = 0.0, ternarize_th = 0.0, Wl = 0.0;
-    int Wl_n=0, posWl=0, negWl=0;
-    for(i=0;i<nweights;i++) w_mean+=fabs(weights[i]);
-    w_mean /=(float)nweights;
-    ternarize_th = 0.7*w_mean;
-    for(i=0;i<nweights;i++){
-        float Wabs = fabs(weights[i]);
-        if (Wabs > ternarize_th){
-            Wl += Wabs;
-            Wl_n++;
-        }
-    }
-    Wl /= (float)Wl_n;
-    for(i=0;i<nweights;i++){
-        if(weights[i] > ternarize_th){
-            ternary_weights[i] = Wl; posWl++;
-        }else if(weights[i] < -ternarize_th){
-            ternary_weights[i] = -Wl;negWl++;
-        }else
-            ternary_weights[i] = 0.0;
-    }
-    //printf("Wmean = %f th = %f Wl = %f pos/neg/all = %d/%d/%d\n",w_mean, ternarize_th, Wl, posWl, negWl,nweights);
-}
-
 __global__ void ternarize_weights_kernel(float *weights, int n, int size, float *ternary_weights)
 {
     int f = (blockIdx.x + blockIdx.y*gridDim.x) * blockDim.x + threadIdx.x;
@@ -135,6 +110,29 @@ void ternarize_weights_gpu(float *weights, int n, int size, float *ternary_weigh
     check_error(cudaPeekAtLastError());
 }
 
+__global__ void check_ternary_weights_kernel(float *weights, int n, int size, float *ternary_weights)
+{
+    int f = (blockIdx.x + blockIdx.y*gridDim.x) * blockDim.x + threadIdx.x;
+    if (f >= n) return;
+    int i = 0;
+    float fmin1 = 1.0e100, fmax1 = -1.0e100, fmin2 = 1.0e100, fmax2 = -1.0e100;
+    for(i = 0; i < size; ++i){
+        //float fvalue = fabsf(weights[f*size + i]);
+        float fvalue = weights[f*size + i];
+        fmax1 = ( fvalue > fmax1)? fvalue : fmax1;
+        fmin1 = ( fvalue < fmin1)? fvalue : fmin1;
+        fmax2 = (-fvalue > fmax2)? fvalue : fmax2;
+        fmin2 = (-fvalue < fmin2)? fvalue : fmin2;
+    }
+    printf("ch-%d %f %f %f %f\n", n, fmax1, fmin1, fmax2, fmin2);
+}
+
+void check_ternary_weights_gpu(float *weights, int n, int size, float *ternary_weights)
+{
+    check_ternary_weights_kernel<<<cuda_gridsize(n), BLOCK>>>(weights, n, size, ternary_weights);
+    check_error(cudaPeekAtLastError());
+}
+
 void forward_convolutional_layer_gpu(convolutional_layer l, network net)
 {
     fill_gpu(l.outputs*l.batch, 0, l.output_gpu, 1);
@@ -149,19 +147,21 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network net)
         binarize_gpu(net.input_gpu, l.c*l.h*l.w*l.batch, l.binary_input_gpu);
         net.input_gpu = l.binary_input_gpu;
     }
-    if(l.ternary){  // Ternarize weights
-        int i, nweights1ch = l.c/l.groups*l.size*l.size;
+    if(0 && l.ternary){  // Ternary: Ternarize weights
+        int nweights1ch = l.c/l.groups*l.size*l.size;
+        assert(0);
         if(0){
+    //        int i;
             // Wl per a output-channel
-            cuda_pull_array(l.weights_gpu, l.weights, nweights1ch*l.n);
-            for(i=0;i<l.n;i++)
-                ternarize_weights(l.weights+i*nweights1ch, nweights1ch, l.ternary_weights+i*nweights1ch);
-            cuda_push_array(l.weights_gpu, l.ternary_weights, nweights1ch*l.n);
+    //        cuda_pull_array(l.weights_gpu, l.weights, nweights1ch*l.n);
+    //        for(i=0;i<l.n;i++)
+    //            ternarize_weights(l.weights+i*nweights1ch, nweights1ch, l.ternary_weights+i*nweights1ch);
+    //        cuda_push_array(l.weights_gpu, l.ternary_weights, nweights1ch*l.n);
         }else if(0){
             // Wl per a layer
-            cuda_pull_array(l.weights_gpu, l.weights, nweights1ch*l.n);
-            ternarize_weights(l.weights, nweights1ch * l.n, l.ternary_weights);
-            cuda_push_array(l.weights_gpu, l.ternary_weights, nweights1ch*l.n);
+   //         cuda_pull_array(l.weights_gpu, l.weights, nweights1ch*l.n);
+   //         ternarize_weights(l.weights, nweights1ch * l.n, l.ternary_weights);
+   //         cuda_push_array(l.weights_gpu, l.ternary_weights, nweights1ch*l.n);
         }else if(0){
             // Wl per a output-channel
             ternarize_weights_gpu(l.weights_gpu, l.n, nweights1ch, l.ternary_weights_gpu);

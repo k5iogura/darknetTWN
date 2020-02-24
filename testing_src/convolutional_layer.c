@@ -7,6 +7,7 @@
 #include "gemm.h"
 #include <stdio.h>
 #include <time.h>
+#include <assert.h>
 
 #ifdef AI2
 #include "xnor_layer.h"
@@ -63,30 +64,34 @@ void binarize_input(float *input, int n, int size, float *binary)
     }
 }
 
-void ternarize_weights(float *weights, int nweights, float *ternary_weights){
-    int i;
-    float w_mean = 0.0, ternarize_th = 0.0, Wl = 0.0;
-    int Wl_n=0, posWl=0, negWl=0;
-    for(i=0;i<nweights;i++) w_mean+=fabs(weights[i]);
-    w_mean /=(float)nweights;
-    ternarize_th = 0.7*w_mean;
-    for(i=0;i<nweights;i++){
-        float Wabs = fabs(weights[i]);
-        if (Wabs > ternarize_th){
-            Wl += Wabs;
-            Wl_n++;
+void ternarize_weights(float *weights, int n, int nweights, float *ternary_weights){
+    int j;
+    for (j=0;j<n;j++){
+        int offset = j * nweights;
+        int i;
+        float w_mean = 0.0, ternarize_th = 0.0, Wl = 0.0;
+        int Wl_n=0, posWl=0, negWl=0;
+        for(i=0;i<nweights;i++) w_mean+=fabs(weights[offset + i]);
+        w_mean /=(float)nweights;
+        ternarize_th = 0.7*w_mean;
+        for(i=0;i<nweights;i++){
+            float Wabs = fabs(weights[offset + i]);
+            if (Wabs > ternarize_th){
+                Wl += Wabs;
+                Wl_n++;
+            }
         }
+        Wl /= (float)Wl_n;
+        for(i=0;i<nweights;i++){
+            if(weights[offset + i] > ternarize_th){
+                ternary_weights[offset + i] = Wl; posWl++;
+            }else if(weights[offset + i] < -ternarize_th){
+                ternary_weights[offset + i] = -Wl;negWl++;
+            }else
+                ternary_weights[offset + i] = 0.0;
+        }
+        //printf("ch:%d/%d Wmean = %f th = %f Wl = %f pos/neg/all = %d/%d/%d\n",j, n, w_mean, ternarize_th, Wl, posWl, negWl,nweights);
     }
-    Wl /= (float)Wl_n;
-    for(i=0;i<nweights;i++){
-        if(weights[i] > ternarize_th){
-            ternary_weights[i] = Wl; posWl++;
-        }else if(weights[i] < -ternarize_th){
-            ternary_weights[i] = -Wl;negWl++;
-        }else
-            ternary_weights[i] = 0.0;
-    }
-    printf("Wmean = %f th = %f Wl = %f pos/neg/all = %d/%d/%d\n",w_mean, ternarize_th, Wl, posWl, negWl,nweights);
 }
 
 void swap_ternary(convolutional_layer *l)
@@ -225,7 +230,7 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
     l.n = n;
     l.binary = binary;
     l.xnor = xnor;
-    l.ternary = ternary;
+    l.ternary = ternary;    // Ternary:
     l.batch = batch;
     l.stride = stride;
     l.size = size;
@@ -270,7 +275,7 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
         l.binary_weights = calloc(l.nweights, sizeof(float));
         l.binary_input = calloc(l.inputs*l.batch, sizeof(float));
     }
-    if(ternary){
+    if(ternary){    // Ternary:
         l.ternary_weights = calloc(c/groups*n*size*size, sizeof(float)); // to Ternarize
         l.ternary_scales  = calloc(n, sizeof(float));
     }
@@ -333,7 +338,7 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
             l.binary_weights_gpu = cuda_make_array(l.weights, l.nweights);
             l.binary_input_gpu = cuda_make_array(0, l.inputs*l.batch);
         }
-        if(ternary){
+        if(ternary){    // Ternary:
             l.ternary_weights_gpu = cuda_make_array(l.weights, l.nweights);
             l.ternary_scales_gpu  = cuda_make_array(l.ternary_scales, l.n);
         }
@@ -370,7 +375,7 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
     l.workspace_size = get_workspace_size(l);
     l.activation = activation;
 
-    fprintf(stderr, "conv  %5d %2d x%2d /%2d  %4d x%4d x%4d   ->  %4d x%4d x%4d  %5.3f BFLOPs ternary=%d\n", n, size, size, stride, w, h, c, l.out_w, l.out_h, l.out_c, (2.0 * l.n * l.size*l.size*l.c/l.groups * l.out_h*l.out_w)/1000000000.,l.ternary);
+    fprintf(stderr, "conv  %5d %2d x%2d /%2d  %4d x%4d x%4d   ->  %4d x%4d x%4d  %5.3f BFLOPs ternary=%d\n", n, size, size, stride, w, h, c, l.out_w, l.out_h, l.out_c, (2.0 * l.n * l.size*l.size*l.c/l.groups * l.out_h*l.out_w)/1000000000.,l.ternary);  // Ternary:
 
     return l;
 }
@@ -502,19 +507,18 @@ void forward_convolutional_layer(convolutional_layer l, network net)
         binarize_cpu(net.input, l.c*l.h*l.w*l.batch, l.binary_input);
         net.input = l.binary_input;
     }
-    if(l.ternary){  // Ternarize weights
+    if(0 && l.ternary){  // Ternary: Ternarize weights
+        assert(l.ternary);
         int nweights1ch = l.c/l.groups*l.size*l.size;
         if(1){
             // Wl per a output-channel
-            int i;
-            for(i=0;i<l.n;i++)
-                ternarize_weights(l.weights+i*nweights1ch, nweights1ch, l.ternary_weights+i*nweights1ch);
+            ternarize_weights(l.weights, l.n, nweights1ch, l.ternary_weights);
         }else{
             // Wl per a layer
-            ternarize_weights(l.weights, nweights1ch * l.n, l.ternary_weights);
+            ternarize_weights(l.weights, 1, nweights1ch * l.n, l.ternary_weights);
         }
         //swap_ternary(&l);
-        memcpy(l.weights, l.ternary_weights, sizeof(float) * nweights1ch * l.n); 
+        //memcpy(l.weights, l.ternary_weights, sizeof(float) * nweights1ch * l.n); 
     }
 
     int m = l.n/l.groups;
@@ -544,7 +548,7 @@ void forward_convolutional_layer(convolutional_layer l, network net)
 
     activate_array(l.output, l.outputs*l.batch, l.activation);
     if(l.binary || l.xnor) swap_binary(&l);
-    if(l.ternary) swap_ternary(&l);
+    //if(l.ternary) swap_ternary(&l);
 }
 
 void backward_convolutional_layer(convolutional_layer l, network net)
