@@ -278,6 +278,7 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
     if(ternary){    // Ternary:
         l.ternary_weights = calloc(c/groups*n*size*size, sizeof(float)); // to Ternarize
         l.ternary_scales  = calloc(n, sizeof(float));
+        l.ternary_nscales = calloc(n, sizeof(int));
     }
 
     if(batch_normalize){
