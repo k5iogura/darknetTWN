@@ -185,8 +185,38 @@ network *make_network(int n)
     return net;
 }
 
+int check_ternarization_in_this_stage(int layerNo, network *netp){ // Ternary
+    int cs = netp->curr_stage;
+    int ns = netp->num_stages;
+    int *stages = netp->stages;
+    if(!ns) return -1;
+    int in_stage = (cs < ns-1 && layerNo < stages[cs+1])? cs:-1;
+    return in_stage;
+}
+
+int get_stage(network *netp){   // Ternary
+    int i, in_stage=-1;
+    int cs = netp->curr_stage;
+    int ns = netp->num_stages;
+    int *batchs = netp->stages_batch;
+    int batchNo = get_current_batch(netp);
+    for(i=0;i<ns-1;i++) in_stage = (batchs[cs] <= batchNo && batchNo < batchs[cs+1])? cs:-1;
+    return in_stage;
+}
+
+int update_stage(network *netp){    // Ternary
+    if(netp->num_stages<=0 || netp->curr_stage<0) return -1;
+    int stage = get_stage(netp);
+    if(stage>=0 && stage != netp->curr_stage){
+        netp->curr_stage = stage;
+        return stage;
+    }
+    return -1;
+}
+
 void forward_network(network *netp)
 {
+    (void)update_stage(netp);
 #ifdef GPU
     if(netp->gpu_index >= 0){
         forward_network_gpu(netp);   
@@ -199,6 +229,7 @@ void forward_network(network *netp)
         net.index = i;
         layer l = net.layers[i];
         if(!netp->train) l.ternary=0;   // Ternary: ternarize when training only
+        l.ternary = (l.ternary>0 && check_ternarization_in_this_stage(i,netp)>=0)? 1:0;
         if(l.ternary){                  // Ternary: next swap_ternary run before update_network
             int nweights1ch = l.c/l.groups*l.size*l.size;
             if(1){
@@ -246,6 +277,7 @@ void update_network(network *netp)
 
     for(i = 0; i < net.n; ++i){
         layer l = net.layers[i];
+        l.ternary = (l.ternary>0 && check_ternarization_in_this_stage(i,netp)>=0)? 1:0;
         if(l.ternary){          // Ternary: update ternary weights
             swap_ternary(&l);
         }

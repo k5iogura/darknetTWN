@@ -690,10 +690,10 @@ void parse_net_options(list *options, network *net)
     net->saturation = option_find_float_quiet(options, "saturation", 1);
     net->exposure = option_find_float_quiet(options, "exposure", 1);
     net->hue = option_find_float_quiet(options, "hue", 0);
-    {
+    {   // Ternary
         char *l = option_find(options, "stages");
         char *p = option_find(options, "stages_batch");
-        if(!l || !p) error("STAGES policy must have stages and stages_batch in cfg file");
+        if(!l ^ !p) error("STAGES policy must have stages and stages_batch in cfg file");
         if(l && p){
 
             int len = strlen(l);
