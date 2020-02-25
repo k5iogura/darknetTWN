@@ -185,7 +185,7 @@ network *make_network(int n)
     return net;
 }
 
-int check_ternarization_in_this_stage(int layerNo, network *netp){ // Ternary
+int check_ternarizing_in_this_stage(int layerNo, network *netp){ // Ternary
     int cs = netp->curr_stage;
     int ns = netp->num_stages;
     int *stages = netp->stages;
@@ -229,7 +229,7 @@ void forward_network(network *netp)
         net.index = i;
         layer l = net.layers[i];
         if(!netp->train) l.ternary=0;   // Ternary: ternarize when training only
-        l.ternary = (l.ternary>0 && check_ternarization_in_this_stage(i,netp)>=0)? 1:0;
+        l.ternary = (l.ternary>0 && check_ternarizing_in_this_stage(i,netp)>=0)? 1:0;
         if(l.ternary){                  // Ternary: next swap_ternary run before update_network
             int nweights1ch = l.c/l.groups*l.size*l.size;
             if(1){
@@ -277,7 +277,7 @@ void update_network(network *netp)
 
     for(i = 0; i < net.n; ++i){
         layer l = net.layers[i];
-        l.ternary = (l.ternary>0 && check_ternarization_in_this_stage(i,netp)>=0)? 1:0;
+        l.ternary = (l.ternary>0 && check_ternarizing_in_this_stage(i,netp)>=0)? 1:0;
         if(l.ternary){          // Ternary: update ternary weights
             swap_ternary(&l);
         }
