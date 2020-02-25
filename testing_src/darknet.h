@@ -237,6 +237,7 @@ struct layer{
     float * scale_updates;
 
     float * ternary_weights;
+    int   * ternary_nscales;
     float * ternary_scales;
     float * weights;
     float * weight_updates;
@@ -456,6 +457,10 @@ typedef struct network{
     float *scales;
     int   *steps;
     int num_steps;
+    int   *stages;
+    int   *stages_batch;
+    int num_stages;
+    int curr_stage;
     int burn_in;
 
     int adam;

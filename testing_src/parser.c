@@ -649,7 +649,6 @@ learning_rate_policy get_policy(char *s)
     if (strcmp(s, "exp")==0) return EXP;
     if (strcmp(s, "sigmoid")==0) return SIG;
     if (strcmp(s, "steps")==0) return STEPS;
-    if (strcmp(s, "stages")==0) return STAGES;
     fprintf(stderr, "Couldn't find policy %s, going with constant\n", s);
     return CONSTANT;
 }
@@ -691,6 +690,39 @@ void parse_net_options(list *options, network *net)
     net->saturation = option_find_float_quiet(options, "saturation", 1);
     net->exposure = option_find_float_quiet(options, "exposure", 1);
     net->hue = option_find_float_quiet(options, "hue", 0);
+    {
+        char *l = option_find(options, "stages");
+        char *p = option_find(options, "stages_batch");
+        if(!l || !p) error("STAGES policy must have stages and stages_batch in cfg file");
+        if(l && p){
+
+            int len = strlen(l);
+            int n = 1;
+                int i;
+            for(i = 0; i < len; ++i){
+                if (l[i] == ',') ++n;
+            }
+            int *stages = calloc(n, sizeof(int));
+            int *stages_batch = calloc(n, sizeof(int));
+            for(i = 0; i < n; ++i){
+                int stage    = atoi(l);
+                int stage_batch = atoi(p);
+                l = strchr(l, ',')+1;
+                p = strchr(p, ',')+1;
+                stages[i] = stage;
+                stages_batch[i] = stage_batch;
+            }
+            net->stages = stages;
+            net->stages_batch = stages_batch;
+            net->num_stages = n;
+            net->curr_stage = 0;
+            for(i=0;i<net->num_stages;i++)
+                printf("stage-%d from layer-%d with batch %d\n",i,stages[i],stages_batch[i]);
+        }else{
+            net->num_stages = 0;
+            net->curr_stage = -1;
+        }
+    }
 
     if(!net->inputs && !(net->h && net->w && net->c)) error("No input parameters supplied");
 
@@ -725,30 +757,6 @@ void parse_net_options(list *options, network *net)
         net->scales = scales;
         net->steps = steps;
         net->num_steps = n;
-    } else if (net->policy == STAGES){
-        char *l = option_find(options, "stages");
-        char *p = option_find(options, "stages_batch");
-        if(!l || !p) error("STAGES policy must have stages and stages_batch in cfg file");
-
-        int len = strlen(l);
-        int n = 1;
-        int i;
-        for(i = 0; i < len; ++i){
-            if (l[i] == ',') ++n;
-        }
-        int *stages = calloc(n, sizeof(int));
-        int *stages_batch = calloc(n, sizeof(int));
-        for(i = 0; i < n; ++i){
-            int stage    = atoi(l);
-            int stage_batch = atoi(p);
-            l = strchr(l, ',')+1;
-            p = strchr(p, ',')+1;
-            stages[i] = stage;
-            stages_batch[i] = stage_batch;
-        }
-        net->stages = stages;
-        net->stages_batch = stages_batch;
-        net->num_stages = n;
     } else if (net->policy == EXP){
         net->gamma = option_find_float(options, "gamma", 1);
     } else if (net->policy == SIG){
