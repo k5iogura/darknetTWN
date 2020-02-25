@@ -190,7 +190,7 @@ int check_ternarizing_in_this_stage(int layerNo, network *netp){ // Ternary
     int ns = netp->num_stages;
     int *stages = netp->stages;
     if(!ns) return -1;
-    int in_stage = (cs < ns-1 && layerNo < stages[cs+1])? cs:-1;
+    int in_stage = (cs < ns-1 && layerNo >= stages[cs])? cs:-1;
     return in_stage;
 }
 
