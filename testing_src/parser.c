@@ -717,7 +717,7 @@ void parse_net_options(list *options, network *net)
             net->num_stages = n;
             net->curr_stage = 0;
             for(i=0;i<net->num_stages;i++)
-                printf("stage-%d from layer-%d with batch %d\n",i,stages[i],stages_batch[i]);
+                fprintf(stderr,"stage-%d from layer-%d with batch %d\n",i,stages[i],stages_batch[i]);
         }else{
             net->num_stages = 0;
             net->curr_stage = -1;

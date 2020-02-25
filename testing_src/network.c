@@ -200,15 +200,18 @@ int get_stage(network *netp){   // Ternary
     int ns = netp->num_stages;
     int *batchs = netp->stages_batch;
     int batchNo = get_current_batch(netp);
-    for(i=0;i<ns-1;i++) in_stage = (batchs[cs] <= batchNo && batchNo < batchs[cs+1])? cs:-1;
+    int start_batch = (cs==0)? 0:batchs[cs];
+    for(i=0;i<ns-1;i++) in_stage = (start_batch <= batchNo && batchNo < batchs[cs+1])? cs:-1;
     return in_stage;
 }
 
 int update_stage(network *netp){    // Ternary
     if(netp->num_stages<=0 || netp->curr_stage<0) return -1;
     int stage = get_stage(netp);
+    assert(stage>=0);
     if(stage>=0 && stage != netp->curr_stage){
         netp->curr_stage = stage;
+        printf("Changed stage into %d batch %d\n",stage,netp->stages_batch[stage]);
         return stage;
     }
     return -1;
