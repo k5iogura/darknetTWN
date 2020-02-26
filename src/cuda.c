@@ -108,9 +108,12 @@ void cuda_random(float *x_gpu, size_t n)
     static curandGenerator_t gen[16];
     static int init[16] = {0};
     int i = cuda_get_device();
+    unsigned int Seed_gpu = 2222222222;
     if(!init[i]){
+        printf("curandSetPseudoRandomGeneratorSeed %d\n",i);
         curandCreateGenerator(&gen[i], CURAND_RNG_PSEUDO_DEFAULT);
-        curandSetPseudoRandomGeneratorSeed(gen[i], time(0));
+        //curandSetPseudoRandomGeneratorSeed(gen[i], time(0));
+        curandSetPseudoRandomGeneratorSeed(gen[i], Seed_gpu);
         init[i] = 1;
     }
     curandGenerateUniform(gen[i], x_gpu, n);

@@ -17,8 +17,9 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
     float avg_loss = -1;
     network **nets = calloc(ngpus, sizeof(network));
 
-    srand(time(0));
-    int seed = rand();
+    unsigned int seed = 2222222222;
+    //srand(time(0));
+    //int seed = rand();
     int i;
     for(i = 0; i < ngpus; ++i){
         srand(seed);
