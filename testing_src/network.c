@@ -243,7 +243,7 @@ void forward_network(network *netp)
         if(!netp->train) l.ternary=0;   // Ternary: ternarize when training only
         l.ternary = (l.ternary>0 && propose_ternarizing_in_this_stage(i,netp)>=0)? 1:0;
         if(l.ternary){                  // Ternary: next swap_ternary run before update_network
-            printf("ternarizing layer %d in_stage %d\n",i,netp->curr_stage);
+        //    printf("ternarizing layer %d in_stage %d\n",i,netp->curr_stage);
             int nweights1ch = l.c/l.groups*l.size*l.size;
             if(1){
                 *l.ternary_nscales = l.n;
