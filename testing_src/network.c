@@ -243,12 +243,11 @@ void forward_network(network *netp)
         if(!netp->train) l.ternary=0;   // Ternary: ternarize when training only
         l.ternary = (l.ternary>0 && propose_ternarizing_in_this_stage(i,netp)>=0)? 1:0;
         if(l.ternary){                  // Ternary: next swap_ternary run before update_network
-        //    printf("ternarizing layer %d in_stage %d\n",i,netp->curr_stage);
             int nweights1ch = l.c/l.groups*l.size*l.size;
-            if(1){
+            if(0){
                 *l.ternary_nscales = l.n;
                 ternarize_weights(l.weights, *l.ternary_nscales, nweights1ch, l.ternary_weights);     // Ternary: output-wise
-            }else if(0){
+            }else if(1){
                 *l.ternary_nscales = 1;
                 ternarize_weights(l.weights, *l.ternary_nscales, l.n * nweights1ch, l.ternary_weights); // Ternary: layer-wise
             }
@@ -833,16 +832,27 @@ void forward_network_gpu(network *netp)
         net.index = i;
         layer l = net.layers[i];
         if(!netp->train) l.ternary=0;   // Ternary: ternarize when training only
+        l.ternary = (l.ternary>0 && propose_ternarizing_in_this_stage(i,netp)>=0)? 1:0;
         if(l.ternary){                  // Ternary: next swap_ternary run before update_network
+        //    printf("ternarizing layer %d in_stage %d\n",i,netp->curr_stage);
             int nweights1ch = l.c/l.groups*l.size*l.size;
-            if (1){
+            if (0){
+                // Ternary: out-channel-wise
                 *l.ternary_nscales = l.n;
                 ternarize_weights_gpu(l.weights_gpu, l.n, nweights1ch, l.ternary_weights_gpu, l.ternary_scales_gpu); //Ternary: output-wise
                 check_ternary_weights_gpu(l.weights_gpu, l.n, nweights1ch, l.ternary_weights_gpu);
-            }else if(0){
+            }else if(1){
+                // Ternary: layer-wise
                 *l.ternary_nscales = 1;
-                ternarize_weights_gpu(l.weights_gpu, 1, l.n * nweights1ch, l.ternary_weights_gpu, l.ternary_scales_gpu); //Ternary: layer-wise
-                check_ternary_weights_gpu(l.weights_gpu, 1, l.n * nweights1ch, l.ternary_weights_gpu);
+                if(1){
+                    cuda_pull_array(l.ternary_weights_gpu, l.ternary_weights, l.nweights);
+                    ternarize_weights(l.weights, 1, l.n * nweights1ch, l.ternary_weights); //Ternary: layer-wise
+                    cuda_push_array(l.ternary_weights_gpu, l.ternary_weights, l.nweights);
+                }else if(1){
+                    //Ternary: Use cpu ver. ternarize_weights_gpu is slow because taken mean of weights with thread==1.
+                    ternarize_weights_gpu(l.weights_gpu, 1, l.n * nweights1ch, l.ternary_weights_gpu, l.ternary_scales_gpu); //Ternary: layer-wise
+                    check_ternary_weights_gpu(l.weights_gpu, 1, l.n * nweights1ch, l.ternary_weights_gpu);
+                }
             }
             swap_ternary(&l);
         }
@@ -916,6 +926,7 @@ void update_network_gpu(network *netp)
 
     for(i = 0; i < net.n; ++i){
         layer l = net.layers[i];
+        l.ternary = (l.ternary>0 && propose_ternarizing_in_this_stage(i,netp)>=0)? 1:0;
         if(l.ternary){          // Ternary: update ternary weights
             swap_ternary(&l);
         }
