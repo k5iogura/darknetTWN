@@ -185,33 +185,42 @@ network *make_network(int n)
     return net;
 }
 
-int check_ternarizing_in_this_stage(int layerNo, network *netp){ // Ternary
+int propose_ternarizing_in_this_stage(int layerNo, network *netp){ // Ternary
     int cs = netp->curr_stage;
     int ns = netp->num_stages;
     int *stages = netp->stages;
-    if(!ns) return -1;
-    int in_stage = (cs < ns-1 && layerNo >= stages[cs])? cs:-1;
+    if(ns<=0 || cs>=ns || cs<0) return 0;
+    int in_stage = (layerNo >= stages[cs])? cs:-1;
     return in_stage;
 }
 
 int get_stage(network *netp){   // Ternary
-    int i, in_stage=-1;
-    int cs = netp->curr_stage;
-    int ns = netp->num_stages;
+    int cs = (netp->curr_stage<0)? 0:netp->curr_stage;
     int *batchs = netp->stages_batch;
     int batchNo = get_current_batch(netp);
-    int start_batch = (cs==0)? 0:batchs[cs];
-    for(i=0;i<ns-1;i++) in_stage = (start_batch <= batchNo && batchNo < batchs[cs+1])? cs:-1;
+    static int batch_offset=-1;  // Because system batch No. starts from 1 not 0
+    if(batch_offset<0){
+        batch_offset = batchNo;
+        printf("system batch offset is %d\n",batch_offset);
+    }
+    batchNo -= batch_offset;
+    int start_batch = (cs==0)? 0:batchs[cs-1];
+    int in_stage = (start_batch <= batchNo && batchNo < batchs[cs])? cs:-1;
     return in_stage;
 }
 
 int update_stage(network *netp){    // Ternary
-    if(netp->num_stages<=0 || netp->curr_stage<0) return -1;
+    static int first_msg = -1;
+    if(netp->curr_stage<0) netp->curr_stage = 0;
+    if(netp->num_stages<=0) return 0;
     int stage = get_stage(netp);
-    assert(stage>=0);
-    if(stage>=0 && stage != netp->curr_stage){
-        netp->curr_stage = stage;
-        printf("Changed stage into %d batch %d\n",stage,netp->stages_batch[stage]);
+    if(stage<0) netp->curr_stage++;
+    if(first_msg == -1 || stage != netp->curr_stage){
+        first_msg = 1;
+        stage = netp->curr_stage;
+        printf("Changed stage into %d stage_layer from %d to last, stage_batch until %d\n",
+            netp->curr_stage, netp->stages[stage], netp->stages_batch[stage]
+        );
         return stage;
     }
     return -1;
@@ -232,8 +241,9 @@ void forward_network(network *netp)
         net.index = i;
         layer l = net.layers[i];
         if(!netp->train) l.ternary=0;   // Ternary: ternarize when training only
-        l.ternary = (l.ternary>0 && check_ternarizing_in_this_stage(i,netp)>=0)? 1:0;
+        l.ternary = (l.ternary>0 && propose_ternarizing_in_this_stage(i,netp)>=0)? 1:0;
         if(l.ternary){                  // Ternary: next swap_ternary run before update_network
+            printf("ternarizing layer %d in_stage %d\n",i,netp->curr_stage);
             int nweights1ch = l.c/l.groups*l.size*l.size;
             if(1){
                 *l.ternary_nscales = l.n;
@@ -280,7 +290,7 @@ void update_network(network *netp)
 
     for(i = 0; i < net.n; ++i){
         layer l = net.layers[i];
-        l.ternary = (l.ternary>0 && check_ternarizing_in_this_stage(i,netp)>=0)? 1:0;
+        l.ternary = (l.ternary>0 && propose_ternarizing_in_this_stage(i,netp)>=0)? 1:0;
         if(l.ternary){          // Ternary: update ternary weights
             swap_ternary(&l);
         }
