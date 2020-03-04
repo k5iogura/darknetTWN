@@ -1,0 +1,6 @@
+classes= 20
+train  = /home/20076433/work/VOC/YOLOv3/train.txt
+valid  = /home/20076433/work/VOC/YOLOv3/2007_test.txt
+names = data/voc.names
+backup = backup_rW_v2_M0
+
