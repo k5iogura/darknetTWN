@@ -1,3 +1,4 @@
+#include <assert.h>
 #include "cuda_runtime.h"
 #include "curand.h"
 #include "cublas_v2.h"
@@ -96,6 +97,77 @@ void ternarize_weights(float *weights, int nweights, float *ternary_weights){
     //printf("Wmean = %f th = %f Wl = %f pos/neg/all = %d/%d/%d\n",w_mean, ternarize_th, Wl, posWl, negWl,nweights);
 }
 
+__global__ void ternarize_weights_kernel(float *weights, int n, int size, float *ternary_weights, float *ternary_scales)
+{
+    int f = (blockIdx.x + blockIdx.y*gridDim.x) * blockDim.x + threadIdx.x;
+    if (f >= n) return;
+    int i = 0;
+    float mean = 0;
+    float ternarize_th = 0.0, Wl = 0.0;
+    int Wl_n=0, posWl=0, negWl=0;
+    for(i = 0; i < size; ++i){
+        mean += fabsf(weights[f*size + i]);
+    }
+    mean = mean / size;
+    ternarize_th = 0.7*mean;
+    for(i=0;i<size;i++){
+        float Wabs = fabsf(weights[f*size + i]);
+        if (Wabs > ternarize_th){
+            Wl += Wabs;
+            Wl_n++;
+        }
+    }
+    Wl /= (float)Wl_n;
+    for(i = 0; i < size; ++i){
+        int idx = f*size + i;
+        if(weights[idx] > ternarize_th){
+            ternary_weights[idx] = Wl; posWl++;
+        }else if(weights[idx] < -ternarize_th){
+            ternary_weights[idx] = -Wl;negWl++;
+        }else
+            ternary_weights[idx] = 0.0;
+    }
+    ternary_scales[f] = Wl;
+    //printf("ch-%d scale =%f\n",f,ternary_scales[f]);
+    //printf("Wmean = %f th = %f Wl = %f pos/neg/all = %d/%d/%d\n",mean, ternarize_th, Wl, posWl, negWl, size);
+}
+
+void ternarize_weights_gpu(float *weights, int n, int size, float *ternary_weights, float *ternary_scales)
+{
+    ternarize_weights_kernel<<<cuda_gridsize(n), BLOCK>>>(weights, n, size, ternary_weights, ternary_scales);
+    check_error(cudaPeekAtLastError());
+}
+
+__global__ void check_ternary_weights_kernel(float *weights, int n, int size, float *ternary_weights)
+{
+    int f = (blockIdx.x + blockIdx.y*gridDim.x) * blockDim.x + threadIdx.x;
+    if (f >= n) return;
+    int i = 0;
+    float fmax = -1.0e100, fmin = 1.0e100;
+    float fvalpos = 0, fvalneg = 0;
+    for(i = 0; i < size; ++i){
+        //float fvalue = fabsf(weights[f*size + i]);
+        float fvalue = ternary_weights[f*size + i];
+        fmax = ( fvalue > fmax)? fvalue:fmax;
+        fmin = ( fvalue < fmin)? fvalue:fmin;
+        fvalpos = ( fvalpos == 0 && fvalue>0 )? fvalue : fvalpos;
+        fvalneg = ( fvalneg == 0 && fvalue<0 )? fvalue : fvalneg;
+    }
+    fmax = fabsf(fmax);
+    fmin = fabsf(fmin);
+    if(fmax!=0 && fmin!=0){
+        fvalpos = fabsf(fvalpos);
+        fvalneg = fabsf(fvalneg);
+        assert(fmax == fmin && fmax == fvalpos && fvalpos == fvalneg);
+    }
+}
+
+void check_ternary_weights_gpu(float *weights, int n, int size, float *ternary_weights)
+{
+    check_ternary_weights_kernel<<<cuda_gridsize(n), BLOCK>>>(weights, n, size, ternary_weights);
+    check_error(cudaPeekAtLastError());
+}
+
 void forward_convolutional_layer_gpu(convolutional_layer l, network net)
 {
     fill_gpu(l.outputs*l.batch, 0, l.output_gpu, 1);
@@ -115,19 +187,21 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network net)
             // Wl per a output-channel
             int i;
             int nweights1ch = l.c/l.groups*l.size*l.size;
-            cuda_pull_array(l.weights_gpu, l.weights, nweights1ch*l.n);
+        //    cuda_pull_array(l.weights_gpu, l.weights, nweights1ch*l.n);
             for(i=0;i<l.n;i++)
                 ternarize_weights(l.weights+i*nweights1ch, nweights1ch, l.ternary_weights+i*nweights1ch);
-            cuda_push_array(l.weights_gpu, l.ternary_weights, nweights1ch*l.n);
+        //    cuda_push_array(l.weights_gpu, l.ternary_weights, nweights1ch*l.n);
             //printf("Wmean = %f th = %f Wl = %f pos/neg/all = %d/%d/%d\n",w_mean, ternarize_th, Wl, posWl, negWl,nweights);
         }else{
-            // Wl per a layer
+            // Wl per a layer, fast on CPU than GPU
             int nweights1ch = l.c/l.groups*l.size*l.size;
             cuda_pull_array(l.weights_gpu, l.weights, nweights1ch*l.n);
             ternarize_weights(l.weights, nweights1ch * l.n, l.ternary_weights);
-            cuda_push_array(l.weights_gpu, l.ternary_weights, nweights1ch*l.n);
+            cuda_push_array(l.ternary_weights_gpu, l.ternary_weights, nweights1ch*l.n);
+            check_ternary_weights_gpu(l.weights_gpu, l.n, nweights1ch, l.ternary_weights_gpu);
             //printf("Wmean = %f th = %f Wl = %f pos/neg/all = %d/%d/%d\n",w_mean, ternarize_th, Wl, posWl, negWl,nweights);
         }
+        swap_ternary(&l);
     }
 
 #ifdef CUDNN
@@ -177,6 +251,7 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network net)
     activate_array_gpu(l.output_gpu, l.outputs*l.batch, l.activation);
     //if(l.dot > 0) dot_error_gpu(l);
     if(l.binary || l.xnor) swap_binary(&l);
+    if(l.ternary) swap_ternary(&l);
 }
 
 __global__ void smooth_kernel(float *x, int n, int w, int h, int c, int size, float rate, float *delta)
@@ -256,6 +331,7 @@ void backward_convolutional_layer_gpu(convolutional_layer l, network net)
 
     if(net.delta_gpu){
         if(l.binary || l.xnor) swap_binary(&l);
+        if(l.ternary) swap_ternary(&l);
         cudnnConvolutionBackwardData(cudnn_handle(),
                 &one,
                 l.weightDesc,
@@ -271,6 +347,7 @@ void backward_convolutional_layer_gpu(convolutional_layer l, network net)
                 net.delta_gpu);
         if(l.binary || l.xnor) swap_binary(&l);
         if(l.xnor) gradient_array_gpu(original_input, l.batch*l.c*l.h*l.w, HARDTAN, net.delta_gpu);
+        if(l.ternary) swap_ternary(&l);
     }
 
 #else
@@ -293,6 +370,7 @@ void backward_convolutional_layer_gpu(convolutional_layer l, network net)
 
             if (net.delta_gpu) {
                 if (l.binary || l.xnor) swap_binary(&l);
+                if(l.ternary) swap_ternary(&l);
                 a = l.weights_gpu + j*l.nweights/l.groups;
                 b = l.delta_gpu + (i*l.groups + j)*m*k;
                 c = net.workspace;
@@ -305,9 +383,8 @@ void backward_convolutional_layer_gpu(convolutional_layer l, network net)
                 if (l.size != 1) {
                     col2im_gpu(net.workspace, l.c/l.groups, l.h, l.w, l.size, l.stride, l.pad, imd);
                 }
-                if(l.binary || l.xnor) {
-                    swap_binary(&l);
-                }
+                if(l.binary || l.xnor) swap_binary(&l);
+                if(l.ternary) swap_ternary(&l);
             }
             if(l.xnor) gradient_array_gpu(original_input + i*l.c*l.h*l.w, l.c*l.h*l.w, HARDTAN, net.delta_gpu + i*l.c*l.h*l.w);
         }

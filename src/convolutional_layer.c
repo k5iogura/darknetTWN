@@ -291,6 +291,9 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
             l.binary_weights_gpu = cuda_make_array(l.weights, l.nweights);
             l.binary_input_gpu = cuda_make_array(0, l.inputs*l.batch);
         }
+        if(ternary){
+            l.ternary_weights_gpu = cuda_make_array(l.ternary_weights, l.nweights);
+        }
 
         if(batch_normalize){
             l.mean_gpu = cuda_make_array(l.mean, n);
@@ -444,6 +447,19 @@ void backward_bias(float *bias_updates, float *delta, int batch, int n, int size
     }
 }
 
+void swap_ternary(convolutional_layer *l)
+{
+    float *swap = l->weights;
+    l->weights = l->ternary_weights;
+    l->ternary_weights = swap;
+
+#ifdef GPU
+    swap = l->weights_gpu;
+    l->weights_gpu = l->ternary_weights_gpu;
+    l->ternary_weights_gpu = swap;
+#endif
+}
+
 void forward_convolutional_layer(convolutional_layer l, network net)
 {
     int i, j;
@@ -479,8 +495,9 @@ void forward_convolutional_layer(convolutional_layer l, network net)
             }else
                 l.ternary_weights[i] = 0.0;
         }
-        memcpy(l.weights, l.ternary_weights, nweights*sizeof(float));
-        printf("Wmean = %f th = %f Wl = %f pos/neg/all = %d/%d/%d\n",w_mean, ternarize_th, Wl, posWl, negWl,nweights);
+        swap_ternary(&l);
+        //memcpy(l.weights, l.ternary_weights, nweights*sizeof(float));
+        //printf("Wmean = %f th = %f Wl = %f pos/neg/all = %d/%d/%d\n",w_mean, ternarize_th, Wl, posWl, negWl,nweights);
     }
 
     int m = l.n/l.groups;
@@ -510,6 +527,7 @@ void forward_convolutional_layer(convolutional_layer l, network net)
 
     activate_array(l.output, l.outputs*l.batch, l.activation);
     if(l.binary || l.xnor) swap_binary(&l);
+    if(l.ternary) swap_ternary(&l);
 }
 
 void backward_convolutional_layer(convolutional_layer l, network net)
@@ -546,6 +564,8 @@ void backward_convolutional_layer(convolutional_layer l, network net)
             gemm(0,1,m,n,k,1,a,k,b,k,1,c,n);
 
             if (net.delta) {
+                if (l.binary || l.xnor) swap_binary(&l);
+                if(l.ternary) swap_ternary(&l);
                 a = l.weights + j*l.nweights/l.groups;
                 b = l.delta + (i*l.groups + j)*m*k;
                 c = net.workspace;
@@ -558,6 +578,8 @@ void backward_convolutional_layer(convolutional_layer l, network net)
                 if (l.size != 1) {
                     col2im_cpu(net.workspace, l.c/l.groups, l.h, l.w, l.size, l.stride, l.pad, imd);
                 }
+                if (l.binary || l.xnor) swap_binary(&l);
+                if(l.ternary) swap_ternary(&l);
             }
         }
     }

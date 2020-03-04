@@ -962,6 +962,7 @@ void save_convolutional_weights(layer l, FILE *fp)
         //save_convolutional_weights_binary(l, fp);
         //return;
     }
+    if(l.ternary) swap_ternary(&l);
 #ifdef GPU
     if(gpu_index >= 0){
         pull_convolutional_layer(l);
@@ -975,6 +976,7 @@ void save_convolutional_weights(layer l, FILE *fp)
         fwrite(l.rolling_variance, sizeof(float), l.n, fp);
     }
     fwrite(l.weights, sizeof(float), num, fp);
+    if(l.ternary) swap_ternary(&l);
 }
 
 void save_batchnorm_weights(layer l, FILE *fp)
