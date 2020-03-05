@@ -15,6 +15,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
     char *base = basecfg(cfgfile);
     printf("%s\n", base);
     float avg_loss = -1;
+    float min_avg_loss = 1.0e10;
     network **nets = calloc(ngpus, sizeof(network));
 
     unsigned int seed = 2222222222;
@@ -121,6 +122,16 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
 #endif
             char buff[256];
             sprintf(buff, "%s/%s_%d.weights", backup_directory, base, i);
+            save_weights(net, buff);
+        }
+        if(min_avg_loss>avg_loss){
+            min_avg_loss = avg_loss;
+#ifdef GPU
+            if(ngpus != 1) sync_nets(nets, ngpus, 0);
+#endif
+            char buff[256];
+            fprintf(stderr, "Saving weights at minimum loss = %f\n", min_avg_loss);
+            sprintf(buff, "%s/%s.minloss.weights", backup_directory, base);
             save_weights(net, buff);
         }
         free_data(train);
