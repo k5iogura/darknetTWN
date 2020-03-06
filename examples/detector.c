@@ -43,7 +43,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
     float jitter = l.jitter;
 
     list *plist = get_paths(train_images);
-    //int N = plist->size;
+    int N = plist->size;
     char **paths = (char **)list_to_array(plist);
 
     load_args args = get_base_args(net);
@@ -62,6 +62,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
     pthread_t load_thread = load_data(args);
     double time;
     int count = 0;
+    int epoch = (*net->seen)/N;
     //while(i*imgs < N*120){
     while(get_current_batch(net) < net->max_batches){
         if(l.random && count++%10 == 0){
@@ -124,17 +125,20 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
             sprintf(buff, "%s/%s_%d.weights", backup_directory, base, i);
             save_weights(net, buff);
         }
-        if(min_avg_loss>avg_loss){
+        if(i > net->burn_in && min_avg_loss > avg_loss){
             min_avg_loss = avg_loss;
 #ifdef GPU
             if(ngpus != 1) sync_nets(nets, ngpus, 0);
 #endif
             char buff[256];
             fprintf(stderr, "Saving weights at minimum loss = %f\n", min_avg_loss);
+            sprintf(buff, "%s/%s_%d.minloss.weights", backup_directory, base, epoch);
+            save_weights(net, buff);
             sprintf(buff, "%s/%s.minloss.weights", backup_directory, base);
             save_weights(net, buff);
         }
         free_data(train);
+        if(*net->seen/N > epoch) epoch = *net->seen/N;
     }
 #ifdef GPU
     if(ngpus != 1) sync_nets(nets, ngpus, 0);
