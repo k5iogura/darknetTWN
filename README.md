@@ -1,12 +1,12 @@
 # Ternary Weights for darknet and YOLO
 
 reference papers
-- Training a Binary Weight Object Detector byKnowledge Transfer for Autonomous Driving(https://arxiv.org/pdf/1804.06332.pdf)  
-- Ternary weight networks(https://arxiv.org/pdf/1605.04711.pdf)  
-- XNOR-Net: ImageNet Classification Using BinaryConvolutional Neural Networks(https://arxiv.org/pdf/1603.05279.pdf)  
+- [Training a Binary Weight Object Detector byKnowledge Transfer for Autonomous Driving](https://arxiv.org/pdf/1804.06332.pdf)  
+- [Ternary weight networks](https://arxiv.org/pdf/1605.04711.pdf)  
+- [XNOR-Net: ImageNet Classification Using BinaryConvolutional Neural Networks](https://arxiv.org/pdf/1603.05279.pdf)  
 
 ## Abstract  
-We applied the stage-wise training to yolov2-voc.cfg on Darknet website(https://github.com/pjreddie).  
+We applied the stage-wise training to yolov2-voc.cfg on [Darknet website](https://github.com/pjreddie).  
 Stage-wise training generate Ternarized weights for yolov2-voc.  
 Stage-wise training splits training step into 3 stages.  
 
