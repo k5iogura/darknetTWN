@@ -1164,6 +1164,29 @@ void load_convolutional_weights_binary(layer l, FILE *fp)
 #endif
 }
 
+void check_ternarized(layer l, int kinds){
+    int i,j,k;
+    int nent = 0;
+    float *entries = calloc(l.nweights, sizeof(float));
+    for(i=0;i<l.nweights;i++){
+        for(j=k=0;j<l.nweights;j++){
+            if(entries[j] == l.weights[i]){
+                k++;
+                break;
+            }
+        }
+        if(!k) entries[nent++] = l.weights[i];
+    }
+    for(i=0;i<nent;i++){
+        if(i%2==0)printf("\nternary(+-): ");
+        printf("%9.6f\t",entries[i]);
+    }
+    printf("layer %10d weights\t",l.nweights);
+    fflush(stdout);
+    assert(nent<kinds);
+    free(entries);
+}
+
 void load_convolutional_weights(layer l, FILE *fp)
 {
     if(l.binary){
@@ -1177,34 +1200,9 @@ void load_convolutional_weights(layer l, FILE *fp)
         fread(l.scales, sizeof(float), l.n, fp);
         fread(l.rolling_mean, sizeof(float), l.n, fp);
         fread(l.rolling_variance, sizeof(float), l.n, fp);
-        if(0){
-            int i;
-            for(i = 0; i < l.n; ++i){
-                printf("%g, ", l.rolling_mean[i]);
-            }
-            printf("\n");
-            for(i = 0; i < l.n; ++i){
-                printf("%g, ", l.rolling_variance[i]);
-            }
-            printf("\n");
-        }
-        if(0){
-            fill_cpu(l.n, 0, l.rolling_mean, 1);
-            fill_cpu(l.n, 0, l.rolling_variance, 1);
-        }
-        if(0){
-            int i;
-            for(i = 0; i < l.n; ++i){
-                printf("%g, ", l.rolling_mean[i]);
-            }
-            printf("\n");
-            for(i = 0; i < l.n; ++i){
-                printf("%g, ", l.rolling_variance[i]);
-            }
-            printf("\n");
-        }
     }
     fread(l.weights, sizeof(float), num, fp);
+    if(l.ternary==1) check_ternarized(l,3);
     //if(l.c == 3) scal_cpu(num, 1./256, l.weights, 1);
     if (l.flipped) {
         transpose_matrix(l.weights, l.c*l.size*l.size, l.n);
