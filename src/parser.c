@@ -1165,10 +1165,19 @@ void load_convolutional_weights_binary(layer l, FILE *fp)
 }
 
 void check_ternarized(layer l, int kinds){
+    static int opening=1;
     int i,j,k;
     int nent = 0;
+    int t_plus=0, t_minus=0, t_zero=0;
     float *entries = calloc(l.nweights, sizeof(float));
+    if(opening){
+        opening=0;
+        printf("\n** Checking Ternary weights **");
+    }
     for(i=0;i<l.nweights;i++){
+        if(l.weights[i]>0)  t_plus++;
+        if(l.weights[i]<0)  t_minus++;
+        if(l.weights[i]==0) t_zero++;
         for(j=k=0;j<l.nweights;j++){
             if(entries[j] == l.weights[i]){
                 k++;
@@ -1181,7 +1190,7 @@ void check_ternarized(layer l, int kinds){
         if(i%2==0)printf("\nternary(+-): ");
         printf("%9.6f\t",entries[i]);
     }
-    printf("layer %10d weights\t",l.nweights);
+    printf("%10d(p/n/z = %8d/%8d/%8d) weights\t",l.nweights,t_plus,t_minus,t_zero);
     fflush(stdout);
     assert(nent<kinds);
     free(entries);
