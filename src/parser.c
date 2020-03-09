@@ -1186,13 +1186,14 @@ void check_ternarized(layer l, int kinds){
         }
         if(!k) entries[nent++] = l.weights[i];
     }
-    for(i=0;i<nent;i++){
-        if(i%2==0)printf("\nternary(+-): ");
-        printf("%9.6f\t",entries[i]);
+    if(nent==2){
+        for(i=0;i<nent;i++){
+            if(i%2==0)printf("\nternary(+-): ");
+            printf("%9.6f\t",entries[i]);
+        }
+        printf("%10d(p/n/z = %8d/%8d/%8d) weights\t",l.nweights,t_plus,t_minus,t_zero);
     }
-    printf("%10d(p/n/z = %8d/%8d/%8d) weights\t",l.nweights,t_plus,t_minus,t_zero);
     fflush(stdout);
-    assert(nent<kinds);
     free(entries);
 }
 
