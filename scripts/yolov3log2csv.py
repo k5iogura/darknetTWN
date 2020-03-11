@@ -1,9 +1,14 @@
-import re, os
+import re, os,sys,argparse
 from pdb import set_trace
-log = 'log_v3-voc-ternary-s2off_stage1off_60550'
+
+args = argparse.ArgumentParser()
+args.add_argument('log', type=str)
+args = args.parse_args()
+log  = args.log
+
 with open(log) as f:
-    while True:
-        line = f.readline().strip()
+    for line in f:
+        line = line.strip()
         m = re.match(r'([0-9]+):',line)
         if m is None:continue
         batch = int(m.group().split(':')[0])
