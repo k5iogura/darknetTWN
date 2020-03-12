@@ -1212,7 +1212,7 @@ void load_convolutional_weights(layer l, FILE *fp)
         fread(l.rolling_variance, sizeof(float), l.n, fp);
     }
     fread(l.weights, sizeof(float), num, fp);
-    if(l.ternary==1) check_ternarized(l,3);
+    //if(l.ternary==1) check_ternarized(l,3);
     //if(l.c == 3) scal_cpu(num, 1./256, l.weights, 1);
     if (l.flipped) {
         transpose_matrix(l.weights, l.c*l.size*l.size, l.n);
