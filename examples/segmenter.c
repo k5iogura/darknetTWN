@@ -46,7 +46,8 @@ void train_segmenter(char *datacfg, char *cfgfile, char *weightfile, int *gpus, 
     load_args args = {0};
     args.w = net->w;
     args.h = net->h;
-    args.threads = 32;
+    //args.threads = 32;
+    args.threads = 1;
     args.scale = div;
 
     args.min = net->min_crop;
@@ -57,7 +58,8 @@ void train_segmenter(char *datacfg, char *cfgfile, char *weightfile, int *gpus, 
     args.saturation = net->saturation;
     args.hue = net->hue;
     args.size = net->w;
-    args.classes = 80;
+    //args.classes = 80;
+    args.classes = 1;
 
     args.paths = paths;
     args.n = imgs;

@@ -752,7 +752,11 @@ data load_data_seg(int n, char **paths, int m, int w, int h, int classes, int mi
     d.y.vals = calloc(d.X.rows, sizeof(float*));
 
     for(i = 0; i < n; ++i){
-        image orig = load_image_color(random_paths[i], 0, 0);
+        char labelpath[4096];
+        find_replace(random_paths[i], "SegmentationClass", "JPEGImages", labelpath);
+        find_replace(labelpath, ".png", ".jpg", labelpath);
+        image orig = load_image_color(labelpath, 0, 0);
+        //image orig = load_image_color(random_paths[i], 0, 0);
         augment_args a = random_augment_args(orig, angle, aspect, min, max, w, h);
         image sized = rotate_crop_image(orig, a.rad, a.scale, a.w, a.h, a.dx, a.dy, a.aspect);
 
@@ -761,7 +765,8 @@ data load_data_seg(int n, char **paths, int m, int w, int h, int classes, int mi
         random_distort_image(sized, hue, saturation, exposure);
         d.X.vals[i] = sized.data;
 
-        image mask = get_segmentation_image(random_paths[i], orig.w, orig.h, classes);
+//        image mask = get_segmentation_image(random_paths[i], orig.w, orig.h, classes);
+        image mask = load_image(random_paths[i], orig.w, orig.h, 1);
         //image mask = make_image(orig.w, orig.h, classes+1);
         image sized_m = rotate_crop_image(mask, a.rad, a.scale/div, a.w/div, a.h/div, a.dx/div, a.dy/div, a.aspect);
 
