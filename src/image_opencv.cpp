@@ -98,7 +98,7 @@ image load_image_cv(char *filename, int channels)
     }
     Mat m;
     m = imread(filename, flag);
-    if(flag==0) cv::threshold(m, m, 0, 255,CV_THRESH_BINARY);
+    if(flag==0) cv::threshold(m, m, 0, 1,CV_THRESH_BINARY);
     if(!m.data){
         fprintf(stderr, "Cannot load image \"%s\"\n", filename);
         char buff[256];
