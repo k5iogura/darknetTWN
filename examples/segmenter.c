@@ -80,7 +80,7 @@ void train_segmenter(char *datacfg, char *cfgfile, char *weightfile, int *gpus, 
         train = buffer;
         load_thread = load_data(args);
 
-        printf("Loaded: %lf seconds\n", what_time_is_it_now()-time);
+        //printf("Loaded: %lf seconds\n", what_time_is_it_now()-time);
         time = what_time_is_it_now();
 
         float loss = 0;
@@ -130,6 +130,77 @@ void train_segmenter(char *datacfg, char *cfgfile, char *weightfile, int *gpus, 
     free(base);
 }
 
+float map_cpu(float thresh, image iG, float* iP){
+    static int i, FP=0, TP=0, FN=0;
+    for(i=0;i<iG.w*iG.h*iG.c;i++){
+        float dff = iG.data[i]-iP[i];
+        float adf = fabs(dff);
+        if(dff<0 && adf>thresh) FP++;
+        if(dff>0 && adf>thresh) FN++;
+        else if(adf<thresh) TP++;
+    }
+    int numerator=TP, denominator=TP+FN+FP;
+//    printf("%d %d %d\n",TP,FN,FP);
+    if(!denominator) return 0.0;
+    return 100.*numerator/(float)denominator;
+}
+
+void map_segmenter(char *datafile, char *cfg, char *weights)
+{
+    list *options = read_data_cfg(datafile);
+    char *valid_list = option_find_str(options, "valid", "data/valid.list");
+    list *plist = get_paths(valid_list);
+    char **paths = (char **)list_to_array(plist);
+    printf("validate %d images\n", plist->size);
+    int N = plist->size;
+    int i;
+
+    network *net = load_network(cfg, weights, 0);
+    set_batch_network(net, 1);
+    srand(2222222);
+
+    clock_t time;
+    char buff[256];
+    char *input = buff;
+    float total_time=0;
+    float map=0, thresh=0.001;
+    printf("%f threshold\n0000000",thresh);
+    for(i=0;i<N;i++){
+        strncpy(input, paths[i], 256);
+        find_replace(paths[i], "SegmentationClass", "JPEGImages", input);
+        find_replace(input, ".png", ".jpg", input);
+        if(0){
+        printf("infer %s\n",input);
+        printf("gtrth %s\n",paths[i]);
+        }
+
+        image im = load_image_color(input, 0, 0);
+        image sized = letterbox_image(im, net->w, net->h);
+
+        image gtmask = load_image(paths[i], sized.w, sized.h, 1);
+
+        float *X = sized.data;
+        time=clock();
+        float *predictions = network_predict(net, X);
+        image pred = get_network_image(net);
+        image prmask = mask_to_rgb(pred);
+        assert(gtmask.h==pred.h && gtmask.w==pred.w && gtmask.c==pred.c);
+        total_time+=sec(clock()-time);
+        map=map_cpu(thresh, gtmask,predictions);
+        printf("\b\b\b\b\b\b\b%4.1fmAP",map);
+        fflush(stdout);
+        if(0){
+        show_image(sized, "orig", 1);
+        show_image(prmask, "pred", 0);
+        }
+        free_image(im);
+        free_image(sized);
+        free_image(prmask);
+        free_image(gtmask);
+    }
+    printf("\n%9.4f mAP Predicted in %f seconds.\n",map ,total_time);
+}
+
 void predict_segmenter(char *datafile, char *cfg, char *weights, char *filename)
 {
     network *net = load_network(cfg, weights, 0);
@@ -167,7 +238,6 @@ void predict_segmenter(char *datafile, char *cfg, char *weights, char *filename)
         if (filename) break;
     }
 }
-
 
 void demo_segmenter(char *datacfg, char *cfg, char *weights, int cam_index, const char *filename)
 {
@@ -252,6 +322,7 @@ void run_segmenter(int argc, char **argv)
     if(0==strcmp(argv[2], "test")) predict_segmenter(data, cfg, weights, filename);
     else if(0==strcmp(argv[2], "train")) train_segmenter(data, cfg, weights, gpus, ngpus, clear, display);
     else if(0==strcmp(argv[2], "demo")) demo_segmenter(data, cfg, weights, cam_index, filename);
+    else if(0==strcmp(argv[2], "map")) map_segmenter(data, cfg, weights);
 }
 
 
