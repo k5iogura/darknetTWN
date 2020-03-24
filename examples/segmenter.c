@@ -131,16 +131,17 @@ void train_segmenter(char *datacfg, char *cfgfile, char *weightfile, int *gpus, 
 }
 
 float map_cpu(float thresh, image iG, float* iP){
-    static int i, FP=0, TP=0, FN=0;
-    for(i=0;i<iG.w*iG.h*iG.c;i++){
-        float dff = iG.data[i]-iP[i];
-        float adf = fabs(dff);
-        if(dff<0 && adf>thresh) FP++;
-        if(dff>0 && adf>thresh) FN++;
-        else if(adf<thresh) TP++;
-    }
+    static int i, c, FP=0, TP=0, FN=0;
+    for(c=0;c<iG.c;c++)
+        for(i=iG.w*iG.h*c;i<iG.w*iG.h;i++){
+            float prv = (iP[i]>thresh)? 1.0 : 0.0;
+            float dff = iG.data[i] - prv*(c+1);
+            float adf = fabs(dff);
+            if(adf<1.0e-6) TP++;
+            else if(dff<0) FP++;
+            else if(dff>0) FN++;
+        }
     int numerator=TP, denominator=TP+FN+FP;
-//    printf("%d %d %d\n",TP,FN,FP);
     if(!denominator) return 0.0;
     return 100.*numerator/(float)denominator;
 }
@@ -157,7 +158,6 @@ void map_segmenter(char *datafile, char *cfg, char *weights)
 
     network *net = load_network(cfg, weights, 0);
     set_batch_network(net, 1);
-    srand(2222222);
 
     clock_t time;
     char buff[256];
@@ -198,7 +198,7 @@ void map_segmenter(char *datafile, char *cfg, char *weights)
         free_image(prmask);
         free_image(gtmask);
     }
-    printf("\n%9.4f mAP Predicted in %f seconds.\n",map ,total_time);
+    printf("\n%9.2f mAP Predicted in %6.2f seconds %9.2f FPS.\n",map ,total_time, N/total_time);
 }
 
 void predict_segmenter(char *datafile, char *cfg, char *weights, char *filename)
