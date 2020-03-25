@@ -146,7 +146,7 @@ float map_cpu(float thresh, image iG, float* iP){
     return 100.*numerator/(float)denominator;
 }
 
-void map_segmenter(char *datafile, char *cfg, char *weights)
+void map_segmenter(char *datafile, char *cfg, char *weights, float thresh, int display)
 {
     list *options = read_data_cfg(datafile);
     char *valid_list = option_find_str(options, "valid", "data/valid.list");
@@ -163,16 +163,12 @@ void map_segmenter(char *datafile, char *cfg, char *weights)
     char buff[256];
     char *input = buff;
     float total_time=0;
-    float map=0, thresh=0.001;
+    float map=0;
     printf("%f threshold\n0000000",thresh);
     for(i=0;i<N;i++){
         strncpy(input, paths[i], 256);
         find_replace(paths[i], "SegmentationClass", "JPEGImages", input);
         find_replace(input, ".png", ".jpg", input);
-        if(0){
-        printf("infer %s\n",input);
-        printf("gtrth %s\n",paths[i]);
-        }
 
         image im = load_image_color(input, 0, 0);
         image sized = letterbox_image(im, net->w, net->h);
@@ -189,9 +185,11 @@ void map_segmenter(char *datafile, char *cfg, char *weights)
         map=map_cpu(thresh, gtmask,predictions);
         printf("\b\b\b\b\b\b\b%4.1fmAP",map);
         fflush(stdout);
-        if(0){
-        show_image(sized, "orig", 1);
-        show_image(prmask, "pred", 0);
+        if(display){
+            printf("infer %s\n",input);
+            printf("gtrth %s\n",paths[i]);
+            show_image(sized, "orig", 1);
+            show_image(prmask, "pred", 0);
         }
         free_image(im);
         free_image(sized);
@@ -319,10 +317,11 @@ void run_segmenter(int argc, char **argv)
     char *cfg = argv[4];
     char *weights = (argc > 5) ? argv[5] : 0;
     char *filename = (argc > 6) ? argv[6]: 0;
+    float thresh = find_float_arg(argc,argv,"-thresh",0.01);
     if(0==strcmp(argv[2], "test")) predict_segmenter(data, cfg, weights, filename);
     else if(0==strcmp(argv[2], "train")) train_segmenter(data, cfg, weights, gpus, ngpus, clear, display);
     else if(0==strcmp(argv[2], "demo")) demo_segmenter(data, cfg, weights, cam_index, filename);
-    else if(0==strcmp(argv[2], "map")) map_segmenter(data, cfg, weights);
+    else if(0==strcmp(argv[2], "map")) map_segmenter(data, cfg, weights, thresh, display);
 }
 
 
