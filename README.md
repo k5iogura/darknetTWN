@@ -30,7 +30,7 @@ We trained yolov2-voc.cfg on 4 jobs, and checked each training curves.
 In fact, our experience denotes that accuracy drops about 5 points against full precision weights inferece. 
 
 |StageNo.|mAP|IOU|  
-|:       |:  |:|  
+|-       |-  |-|  
 |1       |76.24|52.01|
 
 ## Staged training method for yolov2-voc.cfg  
