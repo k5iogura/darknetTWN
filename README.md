@@ -39,6 +39,7 @@ In fact, our experience denotes that accuracy drops about 5 points against full 
 |M2       |75.06|57.71|                |  
 |M3       |73.82|54.90|full ternary    |
 |no staged|72.93|57.90|full ternary    |
+
 Interation 41000(2000/class), steps 80%, 90%, lr=0.001  
 
 **result table regard to yolov3-voc.cfg**  
@@ -51,6 +52,7 @@ Interation 41000(2000/class), steps 80%, 90%, lr=0.001
 |M2       |     |     |                |  
 |M3       |     |     |full ternary    |
 |no staged|     |     |full ternary    |
+
 Interation 100400(5000/class), steps 80%, 90%, lr=0.001  
 
 ## Staged training method for yolov2-voc.cfg  
