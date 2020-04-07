@@ -29,9 +29,18 @@ We trained yolov2-voc.cfg on 4 jobs, and checked each training curves.
 
 In fact, our experience denotes that accuracy drops about 5 points against full precision weights inferece. 
 
-|StageNo.|mAP|IOU|  
-|-       |-  |-|  
-|1       |76.24|52.01|
+**result table regard to yolov2-voc.cfg**  
+
+|Stage    |mAP  |IOU  |comments        |  
+|-        |-    |-    |-               |  
+|         |76.85|54.67|official weights|  
+|M0       |77.09|57.04|                |  
+|M1       |76.44|56.18|                |  
+|M2       |75.06|57.71|                |  
+|M3       |73.82|54.90|                |  
+|M4       |72.93|57.90|full ternary    |  
+
+Interation 41,000, steps 80%, 90%, lr=0.001  
 
 ## Staged training method for yolov2-voc.cfg  
 1. prepare official weights that include full precision weights or train your model.cfg with VOC dataset.  
