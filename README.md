@@ -6,8 +6,14 @@ reference papers
 - [XNOR-Net: ImageNet Classification Using BinaryConvolutional Neural Networks](https://arxiv.org/pdf/1603.05279.pdf)  
 
 ## Abstract  
+Generally the inference task using full ternary weights -1,0,+1 is considered as low accuracy than full precision weights.  
+But for mobile device such as raspberryPI small weights is efficiency choice  
+Many quantization method for model weights are proposed now such as FP16, bfloat, fixed point 16bits, 8bit, ternary 4bits and XNor 1bit too.  
+I consider that re-training after quatization of weights is needed.  
+How to train using some quantization methods? from ground, finetune?  
+
 I propose the staged training for yolov2-voc.cfg, yolov3-voc.cfg on [Darknet website](https://github.com/pjreddie).  
-You can make full ternarized weights for yolov2 yolov3 using this repository.  
+You can make full ternarized weights within 5 points accuracy drops for yolov2, yolov3 using this repository.  
 
 Staged training generates Ternarized weights for yolov2-voc, yolov3-voc.  
 Staged training method splits training step into 3 stages.  
@@ -20,9 +26,12 @@ Stage-3 : full ternarized.
 Weights used on each stages is imported from previous stage, such as stage-2 weights from stage-1.  
 
 We trained yolov2-voc.cfg on 4 jobs, and checked each training curves.  
-Generally the inference task using full ternary weights is considered as low accuracy than full precision weights.  
 
-In fact, our experience denotes that accuracy drops about 3 points against full precision weights inferece. 
+In fact, our experience denotes that accuracy drops about 5 points against full precision weights inferece. 
+
+|StageNo.|mAP|IOU|  
+|:       |:  |:|  
+|1       |76.24|52.01|
 
 ## Staged training method for yolov2-voc.cfg  
 1. prepare official weights that include full precision weights or train your model.cfg with VOC dataset.  
