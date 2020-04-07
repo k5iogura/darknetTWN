@@ -40,7 +40,7 @@ In fact, our experience denotes that accuracy drops about 3 points against full 
 |M3       |73.82|54.90|full ternary    |
 |no staged|72.93|57.90|FT with darknet19_448.conv.23, full ternary    |
 
-Interation 41000(2000/class), steps 80%, 90%, lr=0.001  
+Interation 41000(2000/class), steps x0.1 80%, 90%, lr=0.001  
 
 **result table regard to yolov3-voc.cfg**  
 
@@ -53,8 +53,8 @@ Interation 41000(2000/class), steps 80%, 90%, lr=0.001
 |M3       |     |     |full ternary    |
 |no staged|     |     |FT form darknet53.conv.75, full ternary    |
 
-Interation 100400(5000/class), steps 80%, 90%, lr=0.001 at no stage, M0, M1  
-Interation 60400(3000/class), steps 80%, 90%, lr=0.001 at M2, M3  
+Interation 100400(5000/class), steps x0.1 80%, 90%, lr=0.001 at no stage, M0, M1  
+Interation 60400(3000/class), steps x0.1 80%, 90%, lr=0.001 at M2, M3  
 
 ## Staged training method for yolov2-voc.cfg  
 1. prepare official weights that include full precision weights or train your model.cfg with VOC dataset.  
