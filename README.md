@@ -27,7 +27,7 @@ Weights used on each stages is imported from previous stage, such as stage-2 wei
 
 We trained yolov2-voc.cfg on 4 jobs, and checked each training curves.  
 
-In fact, our experience denotes that accuracy drops about 5 points against full precision weights inferece. 
+In fact, our experience denotes that accuracy drops about 3 points against full precision weights inferece. 
 
 **result table regard to yolov2-voc.cfg**  
 
@@ -38,7 +38,7 @@ In fact, our experience denotes that accuracy drops about 5 points against full 
 |M1       |76.44|56.18|                |  
 |M2       |75.06|57.71|                |  
 |M3       |73.82|54.90|full ternary    |
-|no staged|72.93|57.90|full ternary    |
+|no staged|72.93|57.90|FT with darknet19_448.conv.23, full ternary    |
 
 Interation 41000(2000/class), steps 80%, 90%, lr=0.001  
 
@@ -46,12 +46,12 @@ Interation 41000(2000/class), steps 80%, 90%, lr=0.001
 
 |Stage    |mAP  |IOU  |comments        |  
 |-        |-    |-    |-               |  
-|         |75.54|62.78|FT form dn53.75 |
+|         |75.54|62.78|FT form darknet53.conv.75 |
 |M0       |75.02|63.04|                |  
 |M1       |     |     |                |  
 |M2       |     |     |                |  
 |M3       |     |     |full ternary    |
-|no staged|     |     |full ternary    |
+|no staged|     |     |FT form darknet53.conv.75, full ternary    |
 
 Interation 100400(5000/class), steps 80%, 90%, lr=0.001  
 
