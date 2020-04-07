@@ -53,7 +53,8 @@ Interation 41000(2000/class), steps 80%, 90%, lr=0.001
 |M3       |     |     |full ternary    |
 |no staged|     |     |FT form darknet53.conv.75, full ternary    |
 
-Interation 100400(5000/class), steps 80%, 90%, lr=0.001  
+Interation 100400(5000/class), steps 80%, 90%, lr=0.001 at no stage, M0, M1  
+Interation 60400(3000/class), steps 80%, 90%, lr=0.001 at M2, M3  
 
 ## Staged training method for yolov2-voc.cfg  
 1. prepare official weights that include full precision weights or train your model.cfg with VOC dataset.  
