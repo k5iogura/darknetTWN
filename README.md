@@ -37,10 +37,21 @@ In fact, our experience denotes that accuracy drops about 5 points against full 
 |M0       |77.09|57.04|                |  
 |M1       |76.44|56.18|                |  
 |M2       |75.06|57.71|                |  
-|M3       |73.82|54.90|                |  
-|M4       |72.93|57.90|full ternary    |  
+|M3       |73.82|54.90|full ternary    |
+|no staged|72.93|57.90|full ternary    |
+Interation 41000(2000/class), steps 80%, 90%, lr=0.001  
 
-Interation 41,000, steps 80%, 90%, lr=0.001  
+**result table regard to yolov3-voc.cfg**  
+
+|Stage    |mAP  |IOU  |comments        |  
+|-        |-    |-    |-               |  
+|         |75.54|62.78|FT form dn53.75 |
+|M0       |75.02|63.04|                |  
+|M1       |     |     |                |  
+|M2       |     |     |                |  
+|M3       |     |     |full ternary    |
+|no staged|     |     |full ternary    |
+Interation 100400(5000/class), steps 80%, 90%, lr=0.001  
 
 ## Staged training method for yolov2-voc.cfg  
 1. prepare official weights that include full precision weights or train your model.cfg with VOC dataset.  
