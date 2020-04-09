@@ -546,14 +546,22 @@ void fill_truth(char *path, char **labels, int k, float *truth)
     int i;
     memset(truth, 0, k*sizeof(float));
     int count = 0;
+    char *multi[1024];
+    char long_labels[1024];
     for(i = 0; i < k; ++i){
-        if(strstr(path, labels[i])){
+        sprintf(long_labels,"_%s.",labels[i]);
+        //if(strstr(path, labels[i])){
+        if(strstr(path, long_labels)){
+            multi[count] = labels[i];
             truth[i] = 1;
             ++count;
             //printf("%s %s %d\n", path, labels[i], i);
         }
     }
-    if(count != 1 && (k != 1 || count != 0)) printf("Too many or too few labels: %d, %s\n", count, path);
+    if(count != 1 && (k != 1 || count != 0)){
+        printf("Too many or too few labels: %d, %s\n", count, path);
+        for(i=0;i<count;i++) printf("count %d k %d label %s\n",i,k,multi[i]);
+    }
 }
 
 void fill_hierarchy(float *truth, int k, tree *hierarchy)
