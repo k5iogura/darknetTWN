@@ -1,0 +1,48 @@
+\documentclass[twocolumn]{article}
+\begin{document}
+
+\title{Staged Training to ternarize neural network weight}
+\author{Kenji Ogura}
+\date{April 01 2020}
+\maketitle
+
+\section{Abstract}
+
+\begin{itemize}
+\item
+Training a Binary Weight Object Detector byKnowledge Transfer for Autonomous Driving
+\item
+Ternary weight networks
+\item
+XNOR-Net: ImageNet Classification Using BinaryConvolutional Neural Networks
+\end{itemize}
+
+Generally the inference task using full ternary weights -1,0,+1is considered as low accuracy than full precision weights.
+But for mobile device such as raspberryPI small weights is efficiency choice.
+Many quantization method for model weights are proposed now such asFP16, bfloat, fixed point 16bits, 8bit, ternary 4bits and XNor 1bit too.
+I consider that re-training after quatization of weights is needed.
+How to train using some quantization methods? from ground, finetune?
+
+I propose the staged training for yolov2-voc.cfg, yolov3-voc.cfg on Darknet website.
+You can make full ternarized weights within 5 points accuracy drops
+for yolov2, yolov3 using this repository.
+
+Staged training generates Ternarized weights for yolov2-voc, yolov3-voc.
+Staged training method splits training step into 3 stages.
+
+\begin{itemize}
+\item Stage-0 : few layers are ternarized.
+\item Stage-1 : last some layers are ternarized.
+\item Stage-2 : all ayers without last layer are ternarized.
+\item Stage-3 : full ternarized.
+\end{itemize}
+
+Weights used on each stages is imported from previous stage, such as stage-2 weights from stage-1.
+
+We trained yolov2-voc.cfg on 4 jobs, and checked each training curves.
+
+In fact, our experience denotes that accuracy drops about 3 points against full precision weights inferece.
+
+\section{Result of Training}
+
+\end{document}
