@@ -21,16 +21,17 @@ I was inspired below papers,
 
 Generally the inference task using full ternary weights -1,0,+1 is considered as low accuracy than full precision weights.
 But for mobile device such as raspberryPI small weights will be efficiency choice.
-Many quantization method for model weights are proposed now such asFP16, bfloat, fixed point 16bits, 8bit, ternary 4bits and XNor 1bit too.
+Many quantization methods for model weights are proposed now such as FP16, bfloat, fixed point 16bits, 8bit, ternary 2bits and XNor 1bit too.
 I consider that re-training after quatization of weights is needed.
 How to train using some quantization methods? from ground, finetune?
 
 \section{Staged training}
-I propose the staged training for yolov2-voc.cfg, yolov3-voc.cfg on Darknet website.
-You can get full ternarized weights within 3 points accuracy dropsfor yolov2, yolov3 using this repository.
+In this paper I propose the staged training for yolov2-voc.cfg, yolov3-voc.cfg on Darknet website[4].
+You can get full ternarized weights within 3 points accuracy drops for yolov2, yolov3 using this method.
+4bits ternary weights representaion is x8 smaller than 32bit floating point.
 
 Staged training generates Ternarized weights for yolov2-voc, yolov3-voc.
-Staged training method splits training step into 3 stages.
+Staged training method splits training step into 4 stages.
 
 \begin{itemize}
 \item Stage-0 : first few layers are ternarized.
@@ -41,9 +42,9 @@ Staged training method splits training step into 3 stages.
 
 Weights used on each stages is imported from previous stage, such as stage-2 weights from stage-1.
 
-We trained yolov2-voc.cfg on 4 jobs, and checked each training curves.
-
-In fact, our experience denotes that accuracy drops about 3 points against full precision weights inferece.
+We trained yolov2-voc.cfg on 4 jobs, and checked each loss curves.
+And I use AlexeyAB[5] darknet to get mAP of experiments.
+In fact, our experience denotes that accuracy via ternary weights drops about 3 points against full precision weights inferece.
 
 \section{Result of Training}
 
@@ -88,6 +89,8 @@ Number of iteration is 40400, steps x0.1 at 80\%, 90\%, lr=0.001, burnin=1000 on
  \item Fengfu Li and Bo Zhang, Bin Liu "Ternary weight networks" https://arxiv.org/pdf/1605.04711.pdf
  \item ohammad Rastegari, Vicente Ordonez, Joseph Redmon, Ali Farhadi Allen Institute for AI, University of Washington
  "XNOR-Net: ImageNet Classification Using BinaryConvolutional Neural Networks" https://arxiv.org/pdf/1603.05279.pdf
+ \item https://github.com/pjreddie/darknet
+ \item https://github.com/AlexeyAB/darknet
 
 \end{thebibliography}
 
