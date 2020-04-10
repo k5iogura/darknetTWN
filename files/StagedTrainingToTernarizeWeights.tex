@@ -8,32 +8,34 @@
 
 \section{Abstract}
 
+For small device or Embedded systems without GPU, realtime object detection task via Neural Networks should be worked.
+I was inspired below papers,
 \begin{itemize}
 \item
-Training a Binary Weight Object Detector byKnowledge Transfer for Autonomous Driving
+ Training a Binary Weight Object Detector byKnowledge Transfer for Autonomous Driving[1]
 \item
-Ternary weight networks
+ Ternary weight networks[2]
 \item
-XNOR-Net: ImageNet Classification Using BinaryConvolutional Neural Networks
+ XNOR-Net: ImageNet Classification Using BinaryConvolutional Neural Networks[3]
 \end{itemize}
 
-Generally the inference task using full ternary weights -1,0,+1is considered as low accuracy than full precision weights.
-But for mobile device such as raspberryPI small weights is efficiency choice.
+Generally the inference task using full ternary weights -1,0,+1 is considered as low accuracy than full precision weights.
+But for mobile device such as raspberryPI small weights will be efficiency choice.
 Many quantization method for model weights are proposed now such asFP16, bfloat, fixed point 16bits, 8bit, ternary 4bits and XNor 1bit too.
 I consider that re-training after quatization of weights is needed.
 How to train using some quantization methods? from ground, finetune?
 
+\section{Staged training}
 I propose the staged training for yolov2-voc.cfg, yolov3-voc.cfg on Darknet website.
-You can make full ternarized weights within 5 points accuracy drops
-for yolov2, yolov3 using this repository.
+You can get full ternarized weights within 3 points accuracy dropsfor yolov2, yolov3 using this repository.
 
 Staged training generates Ternarized weights for yolov2-voc, yolov3-voc.
 Staged training method splits training step into 3 stages.
 
 \begin{itemize}
-\item Stage-0 : few layers are ternarized.
-\item Stage-1 : last some layers are ternarized.
-\item Stage-2 : all ayers without last layer are ternarized.
+\item Stage-0 : first few layers are ternarized.
+\item Stage-1 : last few layers are ternarized.
+\item Stage-2 : all layers without last layer are ternarized.
 \item Stage-3 : full ternarized.
 \end{itemize}
 
@@ -44,5 +46,49 @@ We trained yolov2-voc.cfg on 4 jobs, and checked each training curves.
 In fact, our experience denotes that accuracy drops about 3 points against full precision weights inferece.
 
 \section{Result of Training}
+
+Tables denote the result of staged training against normal training.
+VOC 2012, 2007 Dataset is used with training and VOC 2007 for estimate of mAP.
+Number of iteration is 40400, steps x0.1 at 80\%, 90\%, lr=0.001, burnin=1000 on Darknet framework.
+
+\begin{table}[htbp]
+ \centering
+ \begin{tabular}{c|c|c|l}
+  Stage & mAP & IOU & comments \\ \hline\hline
+  -        & 76.85 & 54.67 & official Weights \\ \hline
+  M0       & 77.09 & 57.04 & -                \\ \hline
+  M1       & 76.44 & 56.18 & -                \\ \hline
+  M2       & 75.06 & 57.71 & -                \\ \hline
+  M3       & 73.82 & 54.90 & full ternary     \\ \hline\hline
+  No Stage & 72.93 & 57.90 & full ternary \\ \hline
+ \end{tabular}
+ \caption{result regard to yolov2}
+ \label{tb:yolov2}
+\end{table}
+
+
+\begin{table}[htbp]
+ \centering
+ \begin{tabular}{c|c|c|l}
+  Stage & mAP & IOU & comments \\ \hline\hline
+  -        & 75.54 & 62.78 & -                \\ \hline
+  M0       & 75.02 & 63.04 & -                \\ \hline
+  M1       & 76.44 & 56.18 & -                \\ \hline
+  M2       & 75.06 & 57.71 & -                \\ \hline
+  M3       & 73.82 & 54.90 & full ternary     \\ \hline\hline
+  No Stage & 72.93 & 57.90 & full ternary \\ \hline
+ \end{tabular}
+ \caption{result regard to yolov3}
+ \label{tb:yolov3}
+\end{table}
+
+\begin{thebibliography}{99}
+ \item Jiaolong Xu, Peng Wang, Heng Yang‡and Antonio et.al.
+ "Training a Binary Weight Object Detector byKnowledge Transfer for Auonomous Driving" https://arxiv.org/pdf/1804.06332.pdf
+ \item Fengfu Li and Bo Zhang, Bin Liu "Ternary weight networks" https://arxiv.org/pdf/1605.04711.pdf
+ \item ohammad Rastegari, Vicente Ordonez, Joseph Redmon, Ali Farhadi Allen Institute for AI, University of Washington
+ "XNOR-Net: ImageNet Classification Using BinaryConvolutional Neural Networks" https://arxiv.org/pdf/1603.05279.pdf
+
+\end{thebibliography}
 
 \end{document}
