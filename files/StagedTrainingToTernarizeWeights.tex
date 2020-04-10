@@ -25,13 +25,13 @@ Many quantization methods for model weights are proposed now such as FP16, bfloa
 I consider that re-training after quatization of weights is needed.
 How to train using some quantization methods? from ground, finetune?
 
-\section{Staged training}
+\section{Staged training method}
 In this paper I propose the staged training for yolov2-voc.cfg, yolov3-voc.cfg on Darknet website[4].
 You can get full ternarized weights within 3 points accuracy drops for yolov2, yolov3 using this method.
 4bits ternary weights representaion is x8 smaller than 32bit floating point.
 
 Staged training generates Ternarized weights for yolov2-voc, yolov3-voc.
-Staged training method splits training step into 4 stages.
+This method sprits training step into 4 stages.
 
 \begin{itemize}
 \item Stage-0 : first few layers are ternarized.
