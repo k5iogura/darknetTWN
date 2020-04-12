@@ -45,12 +45,12 @@ Interation 41000(2000/class), steps x0.1 80%, 90%, lr=0.001
 **result table regard to yolov3-voc.cfg**  
 
 |Stage    |mAP  |IOU  |comments        |  
-|-        |-    |-    |-               |  
-|         |75.54|62.78|FT form darknet53.conv.75 |
-|M0       |75.02|63.04|                |  
-|M1       |     |     |                |  
-|M2       |     |     |                |  
-|M3       |     |     |full ternary    |
+|-        |-    |-    |FT from darknet53.conv.75 full precision   |  
+|         |75.54|62.78|FT form darknet53.conv.75                  |
+|M0       |75.02|63.04|                                           |  
+|M1       |73.69|63.75|                                           |  
+|M2       |73.76|63.54|                                           |  
+|M3       |71.26|61.61|full ternary                               |
 |no staged|     |     |FT form darknet53.conv.75, full ternary    |
 
 Interation 100400(5000/class), steps x0.1 80%, 90%, lr=0.001 at no stage, M0, M1  
