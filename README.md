@@ -46,12 +46,12 @@ Interation 41000(2000/class), steps x0.1 80%, 90%, lr=0.001
 
 |Stage    |mAP  |IOU  |comments        |  
 |-        |-    |-    |FT from darknet53.conv.75 full precision   |  
-|         |75.54|62.78|FT form darknet53.conv.75                  |
+|         |75.54|62.78|FT form darknet53.conv.75                  |  
 |M0       |75.02|63.04|                                           |  
 |M1       |73.69|63.75|                                           |  
 |M2       |73.76|63.54|                                           |  
-|M3       |71.26|61.61|full ternary                               |
-|no staged|     |     |FT form darknet53.conv.75, full ternary    |
+|M3       |71.26|61.61|full ternary                               |  
+|no staged|     |     |FT form darknet53.conv.75, full ternary    |  
 
 Interation 100400(5000/class), steps x0.1 80%, 90%, lr=0.001 at no stage, M0, M1  
 Interation 60400(3000/class), steps x0.1 80%, 90%, lr=0.001 at M2, M3  
