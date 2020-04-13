@@ -2,7 +2,7 @@
 \usepackage[dvipdfmx]{graphicx}
 \begin{document}
 
-\title{Staged Training to ternarize neural network weight}
+\title{Staged Training to ternarize neural network weights}
 \author{Kenji Ogura}
 \date{April 01 2020}
 \maketitle
@@ -29,10 +29,10 @@ How to train using some quantization methods? from ground, finetune?
 \section{Staged training method}
 In this paper I propose the staged training for yolov2-voc.cfg, yolov3-voc.cfg on Darknet website[4].
 You can get full ternarized weights within 3 points accuracy drops for yolov2, within 4.5 points accuracy dorops for yolov3 using this method.
-2bits ternary weights representaion is x8 smaller than 32bit floating point.
+2bits ternary weights representaion may be x16 smaller than 32bit floating point.
 
 Staged training generates Ternarized weights for yolov2-voc, yolov3-voc.
-This method sprits training step into 4 stages.
+This method sprits a training step into 4 stages.
 
 \begin{itemize}
 \item Stage-0 : first few layers are ternarized.
@@ -42,19 +42,29 @@ This method sprits training step into 4 stages.
 \end{itemize}
 
 Weights used on each stages is imported from previous stage, such as stage-2 weights from stage-1.
-o
-\includegraphics[width=10cm]{yolov2-voc_Stages.png}
-\includegraphics[width=8.5cm]{yolov3-voc_Stages.png}
+Figure.1 shows staging for yolov2-voc.cfg into 4 training stages, and Figure.2 for yolov3-voc.cfg.
+On each figures F denote full precision weights and T denotes ternarized weights.
+To estimate this staged training method I implement ternary keyword for each convolution layer in cfg file like 'ternary=1' and I also support ternarizing weights function and ternarized weights memory area in darknet framework.
 
-We trained yolov2-voc.cfg on 4 jobs, and checked each loss curves.
+\begin{figure}
+\includegraphics[width=7cm]{yolov2-voc_Stages.png}
+\caption{Staging for yolov2-voc.cfg}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=7cm]{yolov3-voc_Stages.png}
+\caption{Staging for yolov3-voc.cfg}
+\end{figure}
+
+I trained yolov2-voc.cfg on 4 jobs, and checked each loss curves on Excell graph.
 And I use AlexeyAB[5] darknet to get mAP of experiments.
-In fact, our experience denotes that accuracy via ternary weights drops about 3 points against full precision weights inferece.
+In fact, our experience denotes that accuracy via ternary weights drops about 4 points against full precision weights inferece.
 
 \section{Result of Training}
 
-Tables denote the result of staged training.
+Tables denote the result of my staged training.
 VOC 2012, 2007 Dataset is used with training and VOC 2007 for estimate of mAP.
-Number of iteration is 40400, steps x0.1 at 80\%, 90\%, lr=0.001, burnin=1000 on Darknet framework.
+Number of iteration is 41000 to 100400, steps x0.1 at 80\%, 90\%, lr=0.001, burnin=1000 on Darknet framework.
 
 \begin{table}[htbp]
  \centering
