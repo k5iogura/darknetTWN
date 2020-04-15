@@ -181,6 +181,25 @@ extern "C" void binary_activate_array_gpu(float *x, int n, int size, BINARY_ACTI
     check_error(cudaPeekAtLastError());
 }
 
+__global__ void activate_array_swish_kernel(float *x, int n, float *output_sigmoid_gpu, float *output_gpu)
+{
+    int i = (blockIdx.x + blockIdx.y*gridDim.x) * blockDim.x + threadIdx.x;
+    if (i < n) {
+        float x_val = x[i];
+        float sigmoid = logistic_activate_kernel(x_val);
+        output_sigmoid_gpu[i] = sigmoid;
+        output_gpu[i] = x_val * sigmoid;
+    }
+}
+
+extern "C" void activate_array_swish_gpu(float *x, int n, float *output_sigmoid_gpu, float *output_gpu)
+{
+    //const int num_blocks = get_number_of_blocks(n, BLOCK);
+    activate_array_swish_kernel <<<cuda_gridsize(n), BLOCK>>>(x, n, output_sigmoid_gpu, output_gpu);
+    //CHECK_CUDA(cudaPeekAtLastError());
+    check_error(cudaPeekAtLastError());
+}
+
 __global__ void activate_array_kernel(float *x, int n, ACTIVATION a)
 {
     int i = (blockIdx.x + blockIdx.y*gridDim.x) * blockDim.x + threadIdx.x;

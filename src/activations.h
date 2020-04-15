@@ -16,6 +16,7 @@ void gradient_array_swish(const float *x, const int n, const float * sigmoid, fl
 #ifdef GPU
 void activate_array_gpu(float *x, int n, ACTIVATION a);
 void gradient_array_gpu(float *x, int n, ACTIVATION a, float *delta);
+void activate_array_swish_gpu(float *x, int n, float *output_sigmoid_gpu, float *output_gpu);
 #endif
 
 static inline float stair_activate(float x)
