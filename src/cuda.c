@@ -24,6 +24,33 @@ int cuda_get_device()
     return n;
 }
 
+//
+// CUDA Stream is still early to use in darknet as of Apr,16,2020.
+// But I only support get_cuda_stream() for cudaStreamCreate().
+// To use get_cuda_stream cudnn_handle(), blas_handle() must be uncommented with cuda.h.
+// cuda_pull_array_async()
+//
+static cudaStream_t streamsArray[16];    // cudaStreamSynchronize( get_cuda_stream() );
+static int streamInit[16] = { 0 };
+
+cudaStream_t get_cuda_stream() {
+    int i = cuda_get_device();
+    if (!streamInit[i]) {
+        //printf("Create CUDA-stream \n");
+        cudaError_t status = cudaStreamCreate(&streamsArray[i]);
+        //cudaError_t status = cudaStreamCreateWithFlags(&streamsArray[i], cudaStreamNonBlocking);
+        if (status != cudaSuccess) {
+            printf(" cudaStreamCreate error: %d \n", status);
+            const char *s = cudaGetErrorString(status);
+            printf("CUDA Error: %s\n", s);
+            status = cudaStreamCreateWithFlags(&streamsArray[i], cudaStreamDefault);
+            check_error(status);
+        }
+        streamInit[i] = 1;
+    }
+    return streamsArray[i];
+}
+
 void check_error(cudaError_t status)
 {
     //cudaDeviceSynchronize();
@@ -62,6 +89,20 @@ dim3 cuda_gridsize(size_t n){
 }
 
 #ifdef CUDNN
+/*cudnnHandle_t cudnn_handle()
+{
+    static int init[16] = {0};
+    static cudnnHandle_t handle[16];
+    int i = cuda_get_device();
+    if(!init[i]) {
+        cudnnCreate(&handle[i]);
+        init[i] = 1;
+        cudnnStatus_t status = cudnnSetStream(handle[i], get_cuda_stream());
+        check_error(status);
+    }
+    return handle[i];
+}*/
+
 cudnnHandle_t cudnn_handle()
 {
     static int init[16] = {0};
@@ -74,6 +115,20 @@ cudnnHandle_t cudnn_handle()
     return handle[i];
 }
 #endif
+
+/*cublasHandle_t blas_handle()
+{
+    static int init[16] = {0};
+    static cublasHandle_t handle[16];
+    int i = cuda_get_device();
+    if(!init[i]) {
+        cublasCreate(&handle[i]);
+        cublasStatus_t status = cublasSetStream(handle[i], get_cuda_stream());
+        check_error((cudaError_t)status);
+        init[i] = 1;
+    }
+    return handle[i];
+}*/
 
 cublasHandle_t blas_handle()
 {
@@ -166,6 +221,14 @@ void cuda_pull_array(float *x_gpu, float *x, size_t n)
     cudaError_t status = cudaMemcpy(x, x_gpu, size, cudaMemcpyDeviceToHost);
     check_error(status);
 }
+
+/*void cuda_pull_array_async(float *x_gpu, float *x, size_t n)
+{
+    size_t size = sizeof(float)*n;
+    cudaError_t status = cudaMemcpyAsync(x, x_gpu, size, cudaMemcpyDefault, get_cuda_stream());
+    check_error(status);
+    //cudaStreamSynchronize(get_cuda_stream());
+}*/
 
 float cuda_mag_array(float *x_gpu, size_t n)
 {
