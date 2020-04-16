@@ -249,7 +249,7 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network net)
     }
 
     if (l.activation == SWISH) activate_array_swish_gpu(l.output_gpu, l.outputs*l.batch, l.activation_input_gpu, l.output_gpu);
-    activate_array_gpu(l.output_gpu, l.outputs*l.batch, l.activation);
+    else activate_array_gpu(l.output_gpu, l.outputs*l.batch, l.activation);
     //if(l.dot > 0) dot_error_gpu(l);
     if(l.binary || l.xnor) swap_binary(&l);
     if(l.ternary) swap_ternary(&l);
