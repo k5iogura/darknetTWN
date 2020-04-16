@@ -4,7 +4,7 @@
 
 \title{Staged Training Method to ternarize neural network weights}
 \author{Kenji Ogura}
-\date{April 01 2020}
+\date{}
 \maketitle
 
 \section{Abstract}
@@ -45,10 +45,10 @@ Staged training generates Ternarized weights for yolov2-voc, yolov3-voc.
 This method sprits a training step into 4 stages.
 
 \begin{itemize}
-\item Stage-0 : first few layers are ternarized.
-\item Stage-1 : last few layers are ternarized.
-\item Stage-2 : all layers without last layer are ternarized.
-\item Stage-3 : full ternarized.
+\item Stage-0 : first few layers are ternarized(M0)
+\item Stage-1 : last few layers are ternarized(M1)
+\item Stage-2 : all layers without last layer are ternarized(M2)
+\item Stage-3 : full ternarized(M3)
 \end{itemize}
 
 Weights used on each stages is imported from previous stage, such as stage-2 weights from stage-1.
@@ -68,13 +68,11 @@ To estimate this staged training method I implement ternary keyword for each con
 
 I trained yolov2-voc.cfg on 4 jobs, and checked each loss curves on Excell graph.
 And I use AlexeyAB[5] darknet to get mAP of experiments.
-In fact, our experience denotes that accuracy via ternary weights drops about 4.5 points against full precision weights inferece.
 
 \section{Result of Training}
 
 Tables denote the result of my staged training.
-VOC 2012, 2007 Dataset is used with training and VOC 2007 for estimate of mAP.
-Number of iteration is 41000 to 100400, steps x0.1 at 80\%, 90\%, lr=0.001, burnin=1000 on Darknet framework.
+VOC 2012, 2007 Dataset is used with training and VOC 2007 for estimation of mAP.
 
 \begin{table}[htbp]
  \centering
@@ -107,7 +105,14 @@ In Table.1 Iteration 41000(2000/class), steps x0.1 80\% 90\%, lr=0.001 at all st
 \end{table}
 
 In Table.2 Iteration 100400(5000/class), steps x0.1 80\% 90\%, lr=0.001 at M0 and M1
-Iteration 60400(3000/class), steps x0.1 80\% 90\%, lr=0.001 at M2 and M3
+Iteration 60400(3000/class), steps x0.1 80\% 90\%, lr=0.001 at M2 and M3.
+
+\section{Conclusion}
+
+If your applications using object detection task requires speed but not accuracy you can use full ternary weights network.
+To get efficient ternary weights you can use staged training method in this paper.
+Ternary weights is x16 smaller than fp32 representation.
+Full ternary weights network performs accuracy within 4.5\% mAP drops with yolov2 or yolov3 network on darknet framework.
 
 \begin{thebibliography}{99}
  \item Jiaolong Xu, Peng Wang, Heng Yang‡and Antonio et.al.
