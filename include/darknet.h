@@ -684,6 +684,7 @@ void demo(char *cfgfile, char *weightfile, float thresh, int cam_index, const ch
 void get_detection_detections(layer l, int w, int h, float thresh, detection *dets);
 
 char *option_find_str(list *l, char *key, char *def);
+char *option_find_str_quiet(list *l, char *key, char *def);
 int option_find_int(list *l, char *key, int def);
 int option_find_int_quiet(list *l, char *key, int def);
 
