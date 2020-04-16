@@ -2,6 +2,11 @@
 #define BLAS_H
 #include "darknet.h"
 
+void scale_channels_gpu(float *in_w_h_c, int size, int channel_size, int batch_size, int scale_wh, float *scales_c, float *out);
+void backward_scale_channels_gpu(float *in_w_h_c_delta, int size, int channel_size, int batch_size, int scale_wh,
+    float *in_scales_c, float *out_from_delta,
+    float *in_from_output, float *out_state_delta);
+
 void flatten(float *x, int size, int layers, int batch, int forward);
 void pm(int M, int N, float *A);
 float *random_matrix(int rows, int cols);

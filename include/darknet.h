@@ -46,7 +46,7 @@ typedef struct{
 tree *read_tree(char *filename);
 
 typedef enum{
-    LOGISTIC, RELU, RELIE, LINEAR, RAMP, TANH, PLSE, LEAKY, ELU, LOGGY, STAIR, HARDTAN, LHTAN, SELU
+    LOGISTIC, RELU, RELIE, LINEAR, RAMP, TANH, PLSE, LEAKY, ELU, LOGGY, STAIR, HARDTAN, LHTAN, SELU, SWISH
 } ACTIVATION;
 
 typedef enum{
@@ -87,6 +87,7 @@ typedef enum {
     UPSAMPLE,
     LOGXENT,
     L2NORM,
+    SCALE_CHANNELS,
     BLANK
 } LAYER_TYPE;
 
@@ -124,6 +125,7 @@ struct layer{
     void (*update_gpu)    (struct layer, update_args);
     int batch_normalize;
     int shortcut;
+    int scale_wh;   // scale_channels
     int batch;
     int forced;
     int flipped;
@@ -237,6 +239,7 @@ struct layer{
     float * scale_updates;
 
     float * ternary_weights;
+    float * activation_input;
     float * weights;
     float * weight_updates;
 
@@ -381,6 +384,7 @@ struct layer{
     float * binary_weights_gpu;
 
     float * ternary_weights_gpu;
+    float * activation_input_gpu;
 
     float * mean_gpu;
     float * variance_gpu;

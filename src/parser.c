@@ -33,6 +33,7 @@
 #include "route_layer.h"
 #include "upsample_layer.h"
 #include "shortcut_layer.h"
+#include "scale_channels_layer.h"
 #include "softmax_layer.h"
 #include "lstm_layer.h"
 #include "utils.h"
@@ -48,6 +49,7 @@ LAYER_TYPE string_to_layer_type(char * type)
 {
 
     if (strcmp(type, "[shortcut]")==0) return SHORTCUT;
+    if (strcmp(type, "[scale_channels]")==0) return SCALE_CHANNELS;
     if (strcmp(type, "[crop]")==0) return CROP;
     if (strcmp(type, "[cost]")==0) return COST;
     if (strcmp(type, "[detection]")==0) return DETECTION;
@@ -556,6 +558,26 @@ layer parse_shortcut(list *options, size_params params, network *net)
     return s;
 }
 
+layer parse_scale_channels(list *options, size_params params, network *net)
+{
+    char *l = option_find(options, "from");
+    int index = atoi(l);
+    if (index < 0) index = params.index + index;
+    int scale_wh = option_find_int(options, "scale_wh", 0);
+
+    int batch = params.batch;
+    layer from = net->layers[index];
+
+    layer s = make_scale_channels_layer(batch, index, params.w, params.h, params.c, from.out_w, from.out_h, from.out_c, scale_wh);
+
+    char *activation_s = option_find_str(options, "activation", "linear");
+    ACTIVATION activation = get_activation(activation_s);
+    s.activation = activation;
+    if (activation == SWISH) {
+        printf(" [scale_channels] layer doesn't support SWISH activations \n");
+    }
+    return s;
+}
 
 layer parse_l2norm(list *options, size_params params)
 {
@@ -827,6 +849,8 @@ network *parse_network_cfg(char *filename)
             l = parse_upsample(options, params, net);
         }else if(lt == SHORTCUT){
             l = parse_shortcut(options, params, net);
+        }else if (lt == SCALE_CHANNELS) {
+            l = parse_scale_channels(options, params, net);
         }else if(lt == DROPOUT){
             l = parse_dropout(options, params);
             l.output = net->layers[count-1].output;

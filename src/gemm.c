@@ -176,6 +176,8 @@ void gemm_gpu(int TA, int TB, int M, int N, int K, float ALPHA,
         float *C_gpu, int ldc)
 {
     cublasHandle_t handle = blas_handle();
+    //cudaError_t stream_status = (cudaError_t)cublasSetStream(handle, get_cuda_stream());
+    //check_error(stream_status);
     cudaError_t status = cublasSgemm(handle, (TB ? CUBLAS_OP_T : CUBLAS_OP_N), 
             (TA ? CUBLAS_OP_T : CUBLAS_OP_N), N, M, K, &ALPHA, B_gpu, ldb, A_gpu, lda, &BETA, C_gpu, ldc);
     check_error(status);
@@ -229,7 +231,11 @@ void time_gpu(int TA, int TB, int m, int k, int n)
     clock_t start = clock(), end;
     for(i = 0; i<iter; ++i){
         gemm_gpu(TA,TB,m,n,k,1,a_cl,lda,b_cl,ldb,1,c_cl,n);
+#if 0
         cudaThreadSynchronize();
+#else
+        cudaDeviceSynchronize();
+#endif
     }
     double flop = ((double)m)*n*(2.*k + 2.)*iter;
     double gflop = flop/pow(10., 9);
