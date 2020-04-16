@@ -2,18 +2,28 @@
 \usepackage[dvipdfmx]{graphicx}
 \begin{document}
 
-\title{Staged Training to ternarize neural network weights}
+\title{Staged Training Method to ternarize neural network weights}
 \author{Kenji Ogura}
 \date{April 01 2020}
 \maketitle
 
 \section{Abstract}
+I propose the staged training method(STM) for ternary weights network.
+I show mAP performance of full ternarized weights network against full precision network.
+Ternarization method is reffered to related work[2] and training algorithm is reffered to related work[3].
+Proposed STM expands the method in related work[1].
+I use VOC dataset as estimation dataset.
+Full ternarized yolov2 with STM perform 73.82\% mAP against full precision's 76.85\% mAP  3.0\% dorps.
+Full ternarized yolov3 with STM perform 71.26\% mAP against full precision's 75.54\% mAP 4.3\% dorps.
+The result denotes that full ternary weights network is usefull for small computing device.
+
+\section{Introduction}
 
 For small device or Embedded systems without GPU, realtime object detection task via Neural Networks should be worked.
 I was inspired below papers,
 \begin{itemize}
 \item
- Training a Binary Weight Object Detector byKnowledge Transfer for Autonomous Driving[1]
+ Training a Binary Weight Object Detector by Knowledge Transfer for Autonomous Driving[1]
 \item
  Ternary weight networks[2]
 \item
@@ -47,18 +57,18 @@ On each figures F denote full precision weights and T denotes ternarized weights
 To estimate this staged training method I implement ternary keyword for each convolution layer in cfg file like 'ternary=1' and I also support ternarizing weights function and ternarized weights memory area in darknet framework.
 
 \begin{figure}
-\includegraphics[width=7cm]{yolov2-voc_Stages.png}
+\includegraphics[width=8cm]{yolov2-voc_Stages.png}
 \caption{Staging for yolov2-voc.cfg}
 \end{figure}
 
 \begin{figure}
-\includegraphics[width=7cm]{yolov3-voc_Stages.png}
+\includegraphics[width=8cm]{yolov3-voc_Stages.png}
 \caption{Staging for yolov3-voc.cfg}
 \end{figure}
 
 I trained yolov2-voc.cfg on 4 jobs, and checked each loss curves on Excell graph.
 And I use AlexeyAB[5] darknet to get mAP of experiments.
-In fact, our experience denotes that accuracy via ternary weights drops about 4 points against full precision weights inferece.
+In fact, our experience denotes that accuracy via ternary weights drops about 4.5 points against full precision weights inferece.
 
 \section{Result of Training}
 
@@ -80,7 +90,7 @@ Number of iteration is 41000 to 100400, steps x0.1 at 80\%, 90\%, lr=0.001, burn
  \label{tb:yolov2}
 \end{table}
 
-Iteration 41000(2000/class), steps x0.1 80\% 90\%, lr=0.001 at all stages
+In Table.1 Iteration 41000(2000/class), steps x0.1 80\% 90\%, lr=0.001 at all stages
 
 \begin{table}[htbp]
  \centering
@@ -96,7 +106,7 @@ Iteration 41000(2000/class), steps x0.1 80\% 90\%, lr=0.001 at all stages
  \label{tb:yolov3}
 \end{table}
 
-Iteration 100400(5000/class), steps x0.1 80\% 90\%, lr=0.001 at M0 and M1
+In Table.2 Iteration 100400(5000/class), steps x0.1 80\% 90\%, lr=0.001 at M0 and M1
 Iteration 60400(3000/class), steps x0.1 80\% 90\%, lr=0.001 at M2 and M3
 
 \begin{thebibliography}{99}
