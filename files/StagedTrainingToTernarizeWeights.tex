@@ -19,7 +19,7 @@ The result denotes that full ternary weights network is usefull for small comput
 
 \section{Introduction}
 
-For small device or Embedded systems without GPU, realtime object detection task via Neural Networks should be worked.
+For small device or Embedded systems without GPU, realtime object detection task via neural networks should be worked.
 I was inspired below papers,
 \begin{itemize}
 \item
@@ -31,10 +31,10 @@ I was inspired below papers,
 \end{itemize}
 
 Generally the inference task using full ternary weights -1,0,+1 is considered as low accuracy than full precision weights.
-But for mobile device such as raspberryPI small weights will be efficiency choice.
-Many quantization methods for model weights are proposed now such as FP16, bfloat, fixed point 16bits, 8bit, ternary 2bits and XNor 1bit too.
-I consider that re-training after quatization of weights is needed.
-How to train using some quantization methods? from ground, finetune?
+But for mobile device such as raspberryPI small weights will be efficient one of choices.
+Some quantinization methods for model weights are proposed now such as FP16, bfloat, fixed point 16bits, 8bit, ternary 2bits and XNor 1bit too.
+I consider that re-training after quatinization of weights is needed.
+In this paper I propose Staged Trainiing Method(STM) for full ternary weights network and show the result as mAP.
 
 \section{Staged training method}
 In this paper I propose the staged training for yolov2-voc.cfg, yolov3-voc.cfg on Darknet website[4].
@@ -51,7 +51,8 @@ This method sprits a training step into 4 stages.
 \item Stage-3 : full ternarized(M3)
 \end{itemize}
 
-Weights used on each stages is imported from previous stage, such as stage-2 weights from stage-1.
+Each stages import weights from previous stage, such as stage-2 weights from stage-1.
+But stage-0(M0) imports usual full precision weights.
 Figure.1 shows staging for yolov2-voc.cfg into 4 training stages, and Figure.2 for yolov3-voc.cfg.
 On each figures F denote full precision weights and T denotes ternarized weights.
 To estimate this staged training method I implement ternary keyword for each convolution layer in cfg file like 'ternary=1' and I also support ternarizing weights function and ternarized weights memory area in darknet framework.
