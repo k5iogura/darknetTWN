@@ -41,21 +41,22 @@ In this paper I propose the staged training for yolov2-voc.cfg, yolov3-voc.cfg o
 You can get full ternarized weights within 3 points accuracy drops for yolov2, within 4.5 points accuracy dorops for yolov3 using this method.
 2bits ternary weights representaion may be x16 smaller than 32bit floating point.
 
-Staged training generates Ternarized weights for yolov2-voc, yolov3-voc.
-This method sprits a training step into 4 stages.
+STM generates Ternarized weights for yolov2-voc, yolov3-voc.
+This method sprits a training step into 4 stages. Staging Plan is below,
 
 \begin{itemize}
-\item Stage-0 : first few layers are ternarized(M0)
-\item Stage-1 : last few layers are ternarized(M1)
-\item Stage-2 : all layers without last layer are ternarized(M2)
+\item Stage-0 : few layers without around of detector are ternarized(M0)
+\item Stage-1 : 40\% of all layers are ternarized(M1)
+\item Stage-2 : 90\% of all layers are ternarized(M2)
 \item Stage-3 : full ternarized(M3)
 \end{itemize}
 
 Each stages import weights from previous stage, such as stage-2 weights from stage-1.
 But stage-0(M0) imports usual full precision weights.
 Figure.1 shows staging for yolov2-voc.cfg into 4 training stages, and Figure.2 for yolov3-voc.cfg.
-On each figures F denote full precision weights and T denotes ternarized weights.
+On each figures 'F' denote full precision weights and 'T' denotes ternarized weights.
 To estimate this staged training method I implement ternary keyword for each convolution layer in cfg file like 'ternary=1' and I also support ternarizing weights function and ternarized weights memory area in darknet framework.
+To avoid local minimun problem via training ternarized model I sprit training into some steps.
 
 \begin{figure}
 \includegraphics[width=8cm]{yolov2-voc_Stages.png}
