@@ -73,6 +73,12 @@ Interation 60400(3000/class), steps x0.1 80%, 90%, lr=0.001 at M2, M3
 yolov2-voc.minloss.weigts file is saved at minimum loss.  
 I spended 10days to get result of staged training yolov2 with GTX1080 x 2 environment.  
 
+![](files/yolov2-voc_Stages.png)  
+yolov2 staging  
+
+![](files/yolov3-voc_Stages.png)  
+yolov3 staging  
+
 ## More extra information regrad to this repo.  
 - [segmenter](README_segmenter.md)  
 
