@@ -1,4 +1,4 @@
-# Experimental result of Full Ternarized Weight Network(FTWN) for darknet and YOLO
+# Experiment of training Full Ternary Weight Network(FTWN) with darknet and YOLO
 
 reference papers
 - [Training a Binary Weight Object Detector byKnowledge Transfer for Autonomous Driving](https://arxiv.org/pdf/1804.06332.pdf)  
@@ -6,32 +6,32 @@ reference papers
 - [XNOR-Net: ImageNet Classification Using BinaryConvolutional Neural Networks](https://arxiv.org/pdf/1603.05279.pdf)  
 
 ## Abstract  
-Generally the inference task using full ternary weights -1,0,+1 with WL is considered as low accuracy than full precision weights.  
+Generally the inference task using full ternary weights -1,0,+1 with scaling by Wl is considered as low accuracy than full precision weights.  
 But for mobile devices such as raspberryPI small weights is efficiency choice.  
 And FPGA devices needs simple culculation mechanism like ternary weights based one.  
 Many quantization method for model weights are proposed now such as FP16, bfloat, fixed point 16bits, 8bit, ternary 2bits and XNor 1bit too.  
 I consider that re-training after quatization of weights is needed.  
 How to train using some quantization methods? from ground, finetune?  
 
-## Staged Traing Method(STM)
+## Staged Training Method(STM)
 I propose the staged training method for yolov2-voc.cfg, yolov3-voc.cfg on [Darknet website](https://github.com/pjreddie) for full ternary weights network.  
-You can make full ternarized weights within 5 points accuracy drops for yolov2, yolov3 using this repository.  
+And to compare STM I also train each models with usual training method.  
 
-Staged training generates Ternarized weights for yolov2-voc, yolov3-voc.  
-Staged training method splits training step into 3 stages.  
+STM generates Ternarized weights for yolov2-voc, yolov3-voc.  
+STM sprits usual training method into 4 stages.  
 
-Stage-0 : few layrs without around detection layers are ternarized.  
-Stage-1 : 40% of all layers are ternarized.  
-Stage-2 : 90% of all layers are ternarized.  
-Stage-3 : full ternarized.  
+Stage-0 : few layrs without around detection layers are ternarized and training.  
+Stage-1 : 40% of all layers are ternarized and training.  
+Stage-2 : 90% of all layers are ternarized and training.  
+Stage-3 : full ternarized and training.  
 
 Weights used on each stages is imported from previous stage, such as stage-2 weights from stage-1.  
-Look at staging plan for yolov2 and yolov3 as example figure.1 or figure.2.
+Look at staging plans for yolov2 and yolov3 figure.1 or figure.2 as example case.
 
-We trained yolov2-voc.cfg on 4 jobs, and checked each training curves.  
+I trained yolov2-voc.cfg and yolov3-voc.cfg with STM, and checked each training curves.  
 
 ## Result of STM with VOC  
-In fact, our experience denotes that accuracy drops about 3 points against full precision weights inferece. 
+My experiments denote that accuracy drops 5 points mAP against full precision weights inferece. 
 
 **result table regard to yolov2-voc.cfg**  
 
