@@ -30,7 +30,7 @@ Look at staging plan for yolov2 and yolov3 as example figure.1 or figure.2.
 
 We trained yolov2-voc.cfg on 4 jobs, and checked each training curves.  
 
-##Result of STM with VOC  
+## Result of STM with VOC  
 In fact, our experience denotes that accuracy drops about 3 points against full precision weights inferece. 
 
 **result table regard to yolov2-voc.cfg**  
