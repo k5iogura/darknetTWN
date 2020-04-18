@@ -13,7 +13,8 @@ Many quantization method for model weights are proposed now such as FP16, bfloat
 I consider that re-training after quatization of weights is needed.  
 How to train using some quantization methods? from ground, finetune?  
 
-I propose the staged training for yolov2-voc.cfg, yolov3-voc.cfg on [Darknet website](https://github.com/pjreddie) for full ternary weights network.  
+## Staged Traing Method(STM)
+I propose the staged training method for yolov2-voc.cfg, yolov3-voc.cfg on [Darknet website](https://github.com/pjreddie) for full ternary weights network.  
 You can make full ternarized weights within 5 points accuracy drops for yolov2, yolov3 using this repository.  
 
 Staged training generates Ternarized weights for yolov2-voc, yolov3-voc.  
