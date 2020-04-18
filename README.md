@@ -1,4 +1,4 @@
-# Staged Training method to ternarize weight for darknet and YOLO
+# Experimental result of Full Ternarized weight network for darknet and YOLO
 
 reference papers
 - [Training a Binary Weight Object Detector byKnowledge Transfer for Autonomous Driving](https://arxiv.org/pdf/1804.06332.pdf)  
