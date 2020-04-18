@@ -7,8 +7,9 @@ reference papers
 
 ## Abstract  
 Generally the inference task using full ternary weights -1,0,+1 is considered as low accuracy than full precision weights.  
-But for mobile device such as raspberryPI small weights is efficiency choice  
-Many quantization method for model weights are proposed now such as FP16, bfloat, fixed point 16bits, 8bit, ternary 4bits and XNor 1bit too.  
+But for mobile device such as raspberryPI small weights is efficiency choice.  
+And FPGA device needs simple culculation mechanism like ternary weights based one.  
+Many quantization method for model weights are proposed now such as FP16, bfloat, fixed point 16bits, 8bit, ternary 2bits and XNor 1bit too.  
 I consider that re-training after quatization of weights is needed.  
 How to train using some quantization methods? from ground, finetune?  
 
