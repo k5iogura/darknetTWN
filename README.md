@@ -25,6 +25,7 @@ Stage-2 : 90% of all layers are ternarized.
 Stage-3 : full ternarized.  
 
 Weights used on each stages is imported from previous stage, such as stage-2 weights from stage-1.  
+Look at staging plan for yolov2 and yolov3 as example figure.1 or figure.2.
 
 We trained yolov2-voc.cfg on 4 jobs, and checked each training curves.  
 
@@ -75,10 +76,10 @@ yolov2-voc.minloss.weigts file is saved at minimum loss.
 I spended 10days to get result of staged training yolov2 with GTX1080 x 2 environment.  
 
 ![](files/yolov2-voc_Stages.png)  
-yolov2 staging  
+figure.1 yolov2 staging plan  
 
 ![](files/yolov3-voc_Stages.png)  
-yolov3 staging  
+figure.2 yolov3 staging plan  
 
 ## More extra information regrad to this repo.  
 - [segmenter](README_segmenter.md)  
