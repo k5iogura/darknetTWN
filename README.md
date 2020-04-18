@@ -6,22 +6,22 @@ reference papers
 - [XNOR-Net: ImageNet Classification Using BinaryConvolutional Neural Networks](https://arxiv.org/pdf/1603.05279.pdf)  
 
 ## Abstract  
-Generally the inference task using full ternary weights -1,0,+1 is considered as low accuracy than full precision weights.  
-But for mobile device such as raspberryPI small weights is efficiency choice.  
-And FPGA device needs simple culculation mechanism like ternary weights based one.  
+Generally the inference task using full ternary weights -1,0,+1 with WL is considered as low accuracy than full precision weights.  
+But for mobile devices such as raspberryPI small weights is efficiency choice.  
+And FPGA devices needs simple culculation mechanism like ternary weights based one.  
 Many quantization method for model weights are proposed now such as FP16, bfloat, fixed point 16bits, 8bit, ternary 2bits and XNor 1bit too.  
 I consider that re-training after quatization of weights is needed.  
 How to train using some quantization methods? from ground, finetune?  
 
-I propose the staged training for yolov2-voc.cfg, yolov3-voc.cfg on [Darknet website](https://github.com/pjreddie).  
+I propose the staged training for yolov2-voc.cfg, yolov3-voc.cfg on [Darknet website](https://github.com/pjreddie) for full ternary weights network.  
 You can make full ternarized weights within 5 points accuracy drops for yolov2, yolov3 using this repository.  
 
 Staged training generates Ternarized weights for yolov2-voc, yolov3-voc.  
 Staged training method splits training step into 3 stages.  
 
-Stage-0 : few layers are ternarized.  
-Stage-1 : last some layers are ternarized.  
-Stage-2 : all ayers without last layer are ternarized.  
+Stage-0 : few layrs without around detection layers are ternarized.  
+Stage-1 : 40% of all layers are ternarized.  
+Stage-2 : 90% of all layers are ternarized.  
 Stage-3 : full ternarized.  
 
 Weights used on each stages is imported from previous stage, such as stage-2 weights from stage-1.  
