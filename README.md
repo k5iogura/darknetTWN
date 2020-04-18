@@ -84,6 +84,11 @@ figure.1 yolov2 staging plan
 ![](files/yolov3-voc_Stages.png)  
 figure.2 yolov3 staging plan  
 
+## Conclusion  
+I made experiments of neural network training with STM.  
+I improved darknet framework to support ternarizing weights in convolutional layer.  
+STM can reduce accuracy damage with FTWN.  
+
 ## More extra information regrad to this repo.  
 - [segmenter](README_segmenter.md)  
 
