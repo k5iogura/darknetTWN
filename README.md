@@ -33,7 +33,7 @@ I trained yolov2-voc.cfg and yolov3-voc.cfg with STM, and checked each training 
 ## Result of STM with VOC  
 My experiments denote that accuracy drops 5 points mAP against full precision weights inferece. 
 
-**result of STM based onyolov2-voc.cfg**  
+**result of STM based on yolov2-voc.cfg**  
 
 |Stage    |mAP  |IOU  |comments        |  
 |-        |-    |-    |-               |  
@@ -60,7 +60,7 @@ Interation 41000(2000/class), steps x0.1 80%, 90%, lr=0.001
 Interation 100400(5000/class), steps x0.1 80%, 90%, lr=0.001 at no stage, M0, M1  
 Interation 60400(3000/class), steps x0.1 80%, 90%, lr=0.001 at M2, M3  
 
-## Staged training method for yolov2-voc.cfg  
+## How to run STM for yolov2-voc.cfg  
 1. prepare official weights that include full precision weights or train your model.cfg with VOC dataset.  
    I wget yolov2-voc.weights from pjreddie web site.  
    And prepare .data file too.  
