@@ -26,7 +26,7 @@ Stage-2 : 90% layers are ternarized and training.
 Stage-3 : full ternarized and training.  
 
 Weights used on each stages is imported from previous stage, such as stage-2 weights from stage-1.  
-Look at staging plans for yolov2 and yolov3 figure.1 or figure.2 as example case.
+Look at **staging plans** for yolov2 and yolov3 figure.1 or figure.2 as example case.
 
 I trained yolov2-voc.cfg and yolov3-voc.cfg with STM, and checked each training curves.  
 
