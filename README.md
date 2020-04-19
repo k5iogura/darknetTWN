@@ -91,6 +91,6 @@ I made experiments of neural network training with STM.
 I improved darknet framework to support ternarizing weights in convolutional layer.  
 STM can reduce accuracy damage with FTWN.  
 
-## More extra information regrad to this repo.  
+## More informations regrad to this repo.  
 - [segmenter](README_segmenter.md)  
-
+- scale_channels layer support for efficientNet  
