@@ -67,14 +67,14 @@ Interation 60400(3000/class), steps x0.1 80%, 90%, lr=0.001 at M2, M3
 
 2. create shell command file such as darknet.sh like below,  
    ./darknet detector train voc_M0.data yolov2-voc_M0.cfg yolov2-voc.weights  
-   ./darknet detector train voc_M1.data yolov2-voc_M1.cfg backup_M0/yolov2-voc.minloss.weights  
-   ./darknet detector train voc_M2.data yolov2-voc_M2.cfg backup_M1/yolov2-voc.minloss.weights  
-   ./darknet detector train voc_M3.data yolov2-voc_M3.cfg backup_M2/yolov2-voc.minloss.weights  
+   ./darknet detector train voc_M1.data yolov2-voc_M1.cfg backup_M0/yolov2-voc_M0.minloss.weights  
+   ./darknet detector train voc_M2.data yolov2-voc_M2.cfg backup_M1/yolov2-voc_M1.minloss.weights  
+   ./darknet detector train voc_M3.data yolov2-voc_M3.cfg backup_M2/yolov2-voc_M2.minloss.weights  
 
 3. go  
    ./darknet.sh
 
-yolov2-voc.minloss.weigts file is saved at minimum loss.  
+Here yolov2-voc_M\*.minloss.weigts file is saved at minimum loss.  
 I spended 10days to get result of staged training yolov2 with GTX1080 x 2 environment.  
 In figures F denotes full precision weights layer and T denotes ternary weight layer.  
 
