@@ -6,7 +6,7 @@ reference papers
 - [XNOR-Net: ImageNet Classification Using BinaryConvolutional Neural Networks](https://arxiv.org/pdf/1603.05279.pdf)  
 
 ## Abstract  
-Generally the inference task using full ternary weights -1,0,+1 with scaling by Wl is considered as low accuracy than full precision weights.  
+Generally the inference task using full ternary weights -1,0,+1 with scaling factor Wl is considered as low accuracy than full precision weights.  
 But for mobile devices such as raspberryPI small weights is efficiency choice.  
 And FPGA devices needs simple culculation mechanism like ternary weights based one.  
 Many quantization method for model weights are proposed now such as FP16, bfloat, fixed point 16bits, 8bit, ternary 2bits and XNor 1bit too.  
