@@ -21,8 +21,8 @@ STM generates Ternarized weights for yolov2-voc, yolov3-voc.
 STM sprits usual training method into 4 stages.  
 
 Stage-0 : few layers without around detection layers are ternarized and training.  
-Stage-1 : 40% of all layers are ternarized and training.  
-Stage-2 : 90% of all layers are ternarized and training.  
+Stage-1 : 40% layers are ternarized and training.  
+Stage-2 : 90% layers are ternarized and training.  
 Stage-3 : full ternarized and training.  
 
 Weights used on each stages is imported from previous stage, such as stage-2 weights from stage-1.  
