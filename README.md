@@ -76,7 +76,9 @@ Interation 60400(3000/class), steps x0.1 80%, 90%, lr=0.001 at M2, M3
 
 Here yolov2-voc_M\*.minloss.weigts file is saved at minimum loss.  
 I spended 10days to get result of staged training yolov2 with GTX1080 x 2 environment.  
-In figures F denotes full precision weights layer and T denotes ternary weight layer.  
+
+**staging plans**  
+In below figures F denotes full precision weights layer and T denotes ternary weight layer.  
 
 ![](files/yolov2-voc_Stages.png)  
 figure.1 yolov2 staging plan  
