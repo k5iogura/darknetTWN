@@ -1,43 +1,40 @@
-\documentclass[twocolumn]{article}
+\documentclass[10pt,a4paper,twocolumn]{article}
 \usepackage[dvipdfmx]{graphicx}
+\usepackage[dvipdfmx]{hyperref}
 \begin{document}
 
-\title{Staged Training Method to ternarize neural network weights}
+\title{Experiment of training Full Ternary Weights Network(FTWN) with darknet YOLO}
 \author{Kenji Ogura}
 \date{}
 \maketitle
 
 \section{Abstract}
-I propose the staged training method(STM) for ternary weights network.
-I show mAP performance of full ternarized weights network against full precision network.
-Ternarization method is reffered to related work[2] and training algorithm is reffered to related work[3].
-Proposed STM expands the method in related work[1].
-I use VOC dataset as estimation dataset.
-Full ternarized yolov2 with STM perform 73.82\% mAP against full precision's 76.85\% mAP  3.0\% dorps.
-Full ternarized yolov3 with STM perform 71.26\% mAP against full precision's 75.54\% mAP 4.3\% dorps.
-The result denotes that full ternary weights network is usefull for small computing device.
+Generally ternarizing weights of model needs retraining after ternarization of weights.
+To reduce accuracy damage by ternarization I propose the staged training method(STM) for full ternary weights network(FTWN).
+At STM retraining and ternarizing pair consist of 4 pairs of Ternarizing and retraining to avoid local minumum problem.
+STM widens ternarizing layers until full ternary weights step by step.
+To confirm effect of STM at experiment I customize darknet framework to support weights ternarizing in convolutional layer and integrate training algorithm in it.
+I train yolov2 and yolov3 models on customized darknet framework with VOC dataset 2012 and 2007 and test with VOC 2007 and get mAP as results.
+Full ternarized yolov2 with STM perform 73.82\% mAP against full precision's 76.85\% mAP.
+Full ternarized yolov3 with STM perform 71.26\% mAP against full precision's 75.54\% mAP.
 
-\section{Introduction}
+\section{Related works}
 
-For small device or Embedded systems without GPU, realtime object detection task via neural networks should be worked.
-I was inspired below papers,
 \begin{itemize}
 \item
- Training a Binary Weight Object Detector by Knowledge Transfer for Autonomous Driving[1]
+ Training algorithm refer to "Alorithm 1" in "XNOR-Net: ImageNet Classification Using BinaryConvolutional Neural Networks"\cite{Rastegari2015XNORNetIC}
 \item
- Ternary weight networks[2]
-\item
- XNOR-Net: ImageNet Classification Using BinaryConvolutional Neural Networks[3]
+ Equation to Ternarize weights with scale factor Wl refer to "equation (3)" in "Ternary weight networks"\cite{Li2016TernaryWN}
 \end{itemize}
 
-Generally the inference task using full ternary weights -1,0,+1 is considered as low accuracy than full precision weights.
-But for mobile device such as raspberryPI small weights will be efficient one of choices.
+Generally the inference task using full ternary weights -1,0,+1 with scaling factor Wl is considered as low accuracy than full precision weights.
+However for mobile device such as raspberryPI small weights will be efficient one of choices.
 Some quantinization methods for model weights are proposed now such as FP16, bfloat, fixed point 16bits, 8bit, ternary 2bits and XNor 1bit too.
 I consider that re-training after quatinization of weights is needed.
 In this paper I propose Staged Trainiing Method(STM) for full ternary weights network and show the result as mAP.
 
 \section{Staged training method}
-In this paper I propose the staged training for yolov2-voc.cfg, yolov3-voc.cfg on Darknet website[4].
+In this paper I propose the staged training for yolov2-voc.cfg\cite{redmon2016yolo9000}, yolov3-voc.cfg\cite{yolov3} on Darknet website.
 You can get full ternarized weights within 3 points accuracy drops for yolov2, within 4.5 points accuracy dorops for yolov3 using this method.
 2bits ternary weights representaion may be x16 smaller than 32bit floating point.
 
@@ -52,7 +49,7 @@ This method sprits a training step into 4 stages. Staging Plan is below,
 \end{itemize}
 
 Each stages import weights from previous stage, such as stage-2 weights from stage-1.
-But stage-0(M0) imports usual full precision weights.
+However stage-0(M0) imports usual full precision weights.
 Figure.1 shows staging for yolov2-voc.cfg into 4 training stages, and Figure.2 for yolov3-voc.cfg.
 On each figures 'F' denote full precision weights and 'T' denotes ternarized weights.
 To estimate this staged training method I implement ternary keyword for each convolution layer in cfg file like 'ternary=1' and I also support ternarizing weights function and ternarized weights memory area in darknet framework.
@@ -69,7 +66,7 @@ To avoid local minimun problem via training ternarized model I sprit training in
 \end{figure}
 
 I trained yolov2-voc.cfg on 4 jobs, and checked each loss curves on Excell graph.
-And I use AlexeyAB[5] darknet to get mAP of experiments.
+And I use \href{https://github.com/AlexeyAB/darknet}{AlexeyAB darknet} to get mAP of experiments.
 
 \section{Result of Training}
 
@@ -116,14 +113,35 @@ To get efficient ternary weights you can use staged training method in this pape
 Ternary weights is x16 smaller than fp32 representation.
 Full ternary weights network performs accuracy within 4.5\% mAP drops with yolov2 or yolov3 network on darknet framework.
 
-\begin{thebibliography}{99}
- \item Jiaolong Xu, Peng Wang, Heng Yang‡and Antonio et.al.
- "Training a Binary Weight Object Detector byKnowledge Transfer for Auonomous Driving" https://arxiv.org/pdf/1804.06332.pdf
- \item Fengfu Li and Bo Zhang, Bin Liu "Ternary weight networks" https://arxiv.org/pdf/1605.04711.pdf
- \item ohammad Rastegari, Vicente Ordonez, Joseph Redmon, Ali Farhadi Allen Institute for AI, University of Washington
- "XNOR-Net: ImageNet Classification Using BinaryConvolutional Neural Networks" https://arxiv.org/pdf/1603.05279.pdf
- \item https://github.com/pjreddie/darknet
- \item https://github.com/AlexeyAB/darknet
+\begin{thebibliography}{1}
+
+\bibitem{Li2016TernaryWN}
+Fengfu Li and Bin Liu.
+\newblock Ternary weight networks.
+\newblock {\em ArXiv}, abs/1605.04711, 2016.
+
+\bibitem{Xu2018TrainingAB}
+Jiaolong Xu, Peng Wang, Haishun Yang, and Antonio.Lpez.
+\newblock Training a binary weight object detector by knowledge transfer for
+  autonomous driving.
+\newblock {\em 2019 International Conference on Robotics and Automation
+  (ICRA)}, pages 2379--2384, 2018.
+
+\bibitem{Rastegari2015XNORNetIC}
+Mohammad Rastegari, Vicente Ordonez, Joseph Redmon, and Ali Farhadi.
+\newblock Xnor-net: Imagenet classification using binary convolutional neural
+  networks.
+\newblock {\em ArXiv}, abs/1603.05279, 2016.
+
+\bibitem{redmon2016yolo9000}
+Joseph Redmon and Ali Farhadi.
+\newblock Yolo9000: Better, faster, stronger.
+\newblock {\em arXiv preprint arXiv:1612.08242}, 2016.
+
+\bibitem{yolov3}
+Joseph Redmon and Ali Farhadi.
+\newblock Yolov3: An incremental improvement.
+\newblock {\em arXiv}, 2018.
 
 \end{thebibliography}
 
