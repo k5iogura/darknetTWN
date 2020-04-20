@@ -13,10 +13,10 @@ Generally ternarizing weights of model needs retraining after ternarization of w
 To reduce accuracy damage by ternarization I propose the staged training method(STM) for full ternary weights network(FTWN).
 At STM retraining and ternarizing pair consist of 4 pairs of Ternarizing and retraining to avoid local minumum problem.
 STM widens ternarizing layers until full ternary weights step by step.
-To confirm effect of STM at experiment I customize darknet framework to support weights ternarizing in convolutional layer and integrate training algorithm in it.
-I train yolov2 and yolov3 models on customized darknet framework with VOC dataset 2012 and 2007 and test with VOC 2007 and get mAP as results.
-Full ternarized yolov2 with STM perform 73.82\% mAP against full precision's 76.85\% mAP.
-Full ternarized yolov3 with STM perform 71.26\% mAP against full precision's 75.54\% mAP.
+To confirm effect of STM at experiment I customized darknet framework to support weights ternarizing in convolutional layer and integrated training algorithm in it.
+I trained yolov2 and yolov3 models on customized darknet framework with VOC dataset 2012 and 2007 and obtained mAP as results.
+Full ternarized yolov2 with STM performs 73.82\% mAP against full precision's 76.85\% mAP.
+Full ternarized yolov3 with STM performs 71.26\% mAP against full precision's 75.54\% mAP.
 
 \section{Related works}
 
@@ -30,7 +30,7 @@ Full ternarized yolov3 with STM perform 71.26\% mAP against full precision's 75.
 Generally the inference task using full ternary weights -1,0,+1 with scaling factor Wl is considered as low accuracy than full precision weights.
 However for mobile device such as raspberryPI small weights will be efficient one of choices.
 Some quantinization methods for model weights are proposed now such as FP16, bfloat, fixed point 16bits, 8bit, ternary 2bits and XNor 1bit too.
-I consider that re-training after quatinization of weights is needed.
+I consider that retraining after quatinization of weights is needed.
 In this paper I propose Staged Trainiing Method(STM) for full ternary weights network and show the result as mAP.
 
 \section{Staged training method}
