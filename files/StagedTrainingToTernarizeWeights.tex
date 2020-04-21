@@ -18,16 +18,6 @@ I trained yolov2 and yolov3 models on customized darknet framework with VOC data
 Full ternarized yolov2 with SRM performs 73.82\% mAP against full precision's 76.85\% mAP.
 Full ternarized yolov3 with SRM performs 71.26\% mAP against full precision's 75.54\% mAP.
 
-\section{Related works}
-
-I refer to papers which denote efficiency of quantinization about XNOR and Ternary weights.
-\begin{itemize}
-\item
- Training algorithm : "Alorithm 1" in "XNOR-Net: ImageNet Classification Using BinaryConvolutional Neural Networks"\cite{Rastegari2015XNORNetIC}
-\item
- Equation to Ternarize weights with scale factor Wl : "equation (3)" in "Ternary weight networks"\cite{Li2016TernaryWN}
-\end{itemize}
-
 \section{Introduction}
 
 Some quantinization methods for model weights are proposed such as FP16, bfloat, fixed point 16bits, 8bit, ternary 2bits and XNor 1bit.
@@ -36,9 +26,22 @@ However for low power device such as mobile phone small weights will be efficien
 I consider that quatinization of weights requires retraining after quantinization.
 In this paper I propose Staged Retrainiing Method(SRM) for full ternary weights network and show the result as mAP.
 
+\section{Related works}
+
+I refer to papers which denote efficiency of quantinization about XNOR and Ternary weights.
+\begin{itemize}
+\item
+ Training algorithm : "Alorithm 1" in "XNOR-Net: ImageNet Classification Using BinaryConvolutional Neural Networks"\cite{Rastegari2015XNORNetIC}
+\item
+ Conversion system to Ternarize weights with scale factor Wl from full precision weigts : "2.2 Approximated solution with threshold-based ternary function" in "Ternary weight networks"\cite{Li2016TernaryWN}
+\end{itemize}
+
+I implement above Training algorithm and Conversion system into \href{https://github.com/pjreddie/darknet}{darknet code} for this experiment.
+
 \section{Staged Retraining Method}
 
-I propose the staged retraining method(SRM) for ternarization of model weights suppressing accuracy damage.
+I propose the staged retraining method(SRM) for full ternarization of model weights suppressing accuracy damage.
+To avoid local minimun problem during retraining ternarized model splitting retraining into some steps is important.
 In experiment SRM generates full ternarized weights for yolov2-voc\cite{redmon2016yolo9000}, yolov3-voc\cite{yolov3} by splitting a training step into 4 stages.
 Roughly staging plan is below,
 
@@ -52,9 +55,8 @@ Roughly staging plan is below,
 Each stages from M1 to M3 import weights from previous stage, such as stage-2 weights from stage-1.
 However stage-0 M0 imports usual full precision weights.
 Figure.1 shows staging for yolov2-voc.cfg into 4 training stages and Figure.2 for yolov3-voc.cfg.
-On each figures 'F' denote full precision weights and 'T' denotes ternarized weights.
-To estimate SRM I implement ternary keyword for each convolution layer in cfg file like 'ternary=1' and I also support ternarizing weights function and memory area saving for the ternarized weights in \href{https://pjreddie.com/darknet/yolo}{darknet framework}.
-To avoid local minimun problem via training ternarized model I split training into some steps.
+On each figures 'F' denote full precision layer and 'T' denotes ternarized layer.
+To estimate SRM I implement ternary keyword for each convolution layer in cfg file like 'ternary=1' and I also implement ternarizing weights function including conversion system\cite{Li2016TernaryWN} and memory area saving for the ternarized weights in \href{https://pjreddie.com/darknet/yolo}{darknet framework}.
 
 \begin{figure}
 \includegraphics[width=8cm]{yolov2-voc_Stages.png}
