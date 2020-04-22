@@ -2,7 +2,7 @@
 import cv2
 import json
 import numpy as np
-import os
+import os,sys
 import random
 import xml.dom.minidom
 import xml.etree.cElementTree as et
@@ -29,23 +29,25 @@ from pdb import set_trace
 #              "90": [79, "toothbrush"]}
 categories = {}
 
-dir_file = os.getcwd() + "/COCO"
+#dir_file = os.getcwd() + "/COCO"
 dir_file = os.getcwd() + "/coco"
-data_file = "train2014"
 
 img_channel = 3
 img_height = 256
 img_width = 256
 img_angle = 30
 
-def save_label_shortname(dir_file):
-    labels_list = "{}_names.list".format(dir_file)
-    shortnames_list = "{}_shortnames.list".format(dir_file)
+def save_label_shortname(dir_file, categories):
+    labels_list = "{}/coco_names.list".format(dir_file)
+    shortnames_list = "{}/coco_shortnames.list".format(dir_file)
+    sorting = [""]*len(categories)
     with open(labels_list,"w") as labels_f:
         with open(shortnames_list,"w") as shorts_f:
-            for key in categories:
-                labels_f.write("%d\n"%int(categories[key][0]))
-                shorts_f.write("%s\n"%str(categories[key][1]))
+            for i, key in enumerate(categories):
+                sorting[int(categories[key][0])] = str(categories[key][1])
+            for i in range(len(sorting)):
+                labels_f.write("%d\n"%i)
+                shorts_f.write("%s\n"%sorting[i])
     print("write {} {} out".format(labels_list, shortnames_list))
 
 def coco256x256(dir_file, data_file, is_train=True):
@@ -69,14 +71,14 @@ def coco256x256(dir_file, data_file, is_train=True):
         ctgid = dataset['categories'][i]['id']
         ctgnm = dataset['categories'][i]['name']
         categories[str(ctgid)] = [i,ctgnm]
-    save_label_shortname(dir_file)
+    save_label_shortname(dir_file, categories)
 
     filename_set = set()
     num_samples = 0
     img_mean = np.zeros((3, 224, 224), dtype="float32")  # (BGR, height, width)
 
     print("Processing {} {} ...".format(dir_file, data_file))
-    with open("./" + data_file + "_coco256x256_map.txt", "w") as map_file:
+    with open(dir_file + "/" + data_file + "_coco256x256.txt", "w") as map_file:
         for ann in annotations:
             """
             segmentation : iscrowd=1 RLE(Run-length encoding) 
@@ -181,8 +183,7 @@ def coco256x256(dir_file, data_file, is_train=True):
     # save mean image as xml
     #
     if is_train:
-        save_mean(data_file + "_coco256x256_mean.xml", img_mean / num_samples)
-        np.save("coco21.npy", np.float32(img_mean / num_samples))
+        cv2.imwrite(dir_file + "/mean.jpg", np.float32(img_mead / num_samples))
 
     #
     # complete trimming image
@@ -190,28 +191,9 @@ def coco256x256(dir_file, data_file, is_train=True):
     print("\nNumber of samples %d"%(num_samples))
 
 
-def save_mean(mean_file, data):
-    root = et.Element("opencv_storage")
-    et.SubElement(root, "Channel").text = "3"
-    et.SubElement(root, "Row").text = "224"
-    et.SubElement(root, "Col").text = "224"
-
-    img_mean = et.SubElement(root, "MeanImg", type_id="opencv-matrix")
-
-    et.SubElement(img_mean, "rows").text = "1"
-    et.SubElement(img_mean, "cols").text = str(3 * 224 * 224)
-    et.SubElement(img_mean, "dt").text = "f"
-    et.SubElement(img_mean, "data").text = " ".join(
-        ["%e\n" % n if (i + 1) % 4 == 0 else "%e" % n for i, n in enumerate(np.reshape(data, (3 * 224 * 224)))])
-
-    tree = et.ElementTree(root)
-    tree.write(mean_file)
-    x = xml.dom.minidom.parse(mean_file)
-    with open(mean_file, "w") as f:
-        f.write(x.toprettyxml(indent="  "))
-
-
+data_files = [["train2014",True], ["val2014",False]]
+data_files = [["val2014",False], ["train2014",True]]
 if __name__ == "__main__":
-    coco256x256(dir_file, "train2014", is_train=True)
-    coco256x256(dir_file, "val2014"  , is_train=False)
-    
+    for data_file, is_train in data_files:
+        coco256x256(dir_file, data_file, is_train=is_train)
+
