@@ -165,7 +165,7 @@ def coco256x256(dir_file, data_file, is_train=True):
                     map_file.write("%s\n" % (savename))
                     cv2.imwrite(savename, saveimg)
             else:
-                map_file.write("%s\n" % (filename256))
+                map_file.write("%s\n" % (filename256[:-4] + '_' + str(label) + '.jpg'))
                 cv2.imwrite(filename256[:-4] + '_' + str(label) + '.jpg', img256)
 
             #
@@ -173,9 +173,9 @@ def coco256x256(dir_file, data_file, is_train=True):
             #
             img_mean += img256[16:240, 16:240, :].transpose(2, 0, 1)
 
-            num_samples += 1
+            num_samples     += 1
             if num_samples % 10000 == 0:
-                print("Now {} {}/{} samples...".format(data_file,num_samples,len(annotations)))
+                print("Now {} {}/{} samples...".format(data_file,num_samples*(1+2*is_train),len(annotations)))
 
     #
     # save mean image as xml
@@ -187,7 +187,7 @@ def coco256x256(dir_file, data_file, is_train=True):
     #
     # complete trimming image
     #
-    print("\nNumber of samples", num_samples)
+    print("\nNumber of samples %d"%(num_samples))
 
 
 def save_mean(mean_file, data):
