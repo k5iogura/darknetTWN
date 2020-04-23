@@ -183,7 +183,7 @@ def coco256x256(dir_file, data_file, is_train=True):
     # save mean image as xml
     #
     if is_train:
-        cv2.imwrite(dir_file + "/mean.jpg", np.float32(img_mead / num_samples))
+        cv2.imwrite(dir_file + "/mean.jpg", np.float32(img_mean / num_samples))
 
     #
     # complete trimming image
@@ -191,8 +191,8 @@ def coco256x256(dir_file, data_file, is_train=True):
     print("\nNumber of samples %d"%(num_samples))
 
 
-data_files = [["train2014",True], ["val2014",False]]
 data_files = [["val2014",False], ["train2014",True]]
+data_files = [["train2014",True], ["val2014",False]]
 if __name__ == "__main__":
     for data_file, is_train in data_files:
         coco256x256(dir_file, data_file, is_train=is_train)
