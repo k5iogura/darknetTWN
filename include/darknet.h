@@ -31,6 +31,10 @@ typedef struct{
 
 metadata get_metadata(char *file);
 
+typedef enum {
+    IOU, GIOU, MSE, DIOU, CIOU
+} IOU_LOSS;
+
 typedef struct{
     int *leaf;
     int n;
@@ -123,6 +127,15 @@ struct layer{
     void (*forward_gpu)   (struct layer, struct network);
     void (*backward_gpu)  (struct layer, struct network);
     void (*update_gpu)    (struct layer, update_args);
+    float scale_x_y;
+    float cls_normalizer;
+    float iou_normalizer;
+    float label_smooth_eps;
+    float *classes_multipliers;
+    float max_delta;
+    float iou_thresh;
+    int focal_loss;
+    IOU_LOSS iou_loss;
     int batch_normalize;
     int shortcut;
     int scale_wh;   // scale_channels
@@ -481,6 +494,10 @@ typedef struct network{
     float saturation;
     float hue;
     int random;
+    int flip;
+    float blur;
+    int mixup;
+    int letter_box;
 
     int gpu_index;
     tree *hierarchy;
@@ -524,6 +541,23 @@ typedef struct{
     float x, y, w, h;
 } box;
 
+// box.h
+typedef struct boxabs {
+    float left, right, top, bot;
+} boxabs;
+
+// box.h
+typedef struct dxrep {
+    float dt, db, dl, dr;
+} dxrep;
+
+// box.h
+typedef struct ious {
+    float iou, giou, diou, ciou;
+    dxrep dx_iou;
+    dxrep dx_giou;
+} ious;
+
 typedef struct detection{
     box bbox;
     int classes;
@@ -561,6 +595,7 @@ typedef struct load_args{
     char **labels;
     int h;
     int w;
+    int c; //append
     int out_w;
     int out_h;
     int nh;
@@ -572,7 +607,17 @@ typedef struct load_args{
     int scale;
     int center;
     int coords;
+    int mini_batch;
+    int track;
+    int augment_speed;
+    int letter_box;
+    int show_imgs;
+    int dontuse_opencv;
     float jitter;
+    int flip;
+    int blur;
+    int mixup;
+    float label_smooth_eps;
     float angle;
     float aspect;
     float saturation;
