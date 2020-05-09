@@ -22,6 +22,7 @@ if args.phrase == "detv3":
 else:
     print(args.phrase, "Not suported")
     sys.exit(-1)
+print("CPU:","/".join(os.uname()[i] for i in range(3)))
 print("CWD:",os.getcwd())
 print('phrase to search iteration and loss:',reg)
 
