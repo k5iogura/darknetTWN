@@ -303,7 +303,8 @@ void backward_convolutional_layer_gpu(convolutional_layer l, network net)
         smooth_layer(l, 5, l.smooth);
     }
     //constrain_gpu(l.outputs*l.batch, 1, l.delta_gpu, 1);
-    gradient_array_gpu(l.output_gpu, l.outputs*l.batch, l.activation, l.delta_gpu);
+    if (l.activation == SWISH) gradient_array_swish_gpu(l.output_gpu, l.outputs*l.batch, l.activation_input_gpu, l.delta_gpu);
+    else gradient_array_gpu(l.output_gpu, l.outputs*l.batch, l.activation, l.delta_gpu);
 
 
     if(l.batch_normalize){

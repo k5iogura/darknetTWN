@@ -200,6 +200,25 @@ extern "C" void activate_array_swish_gpu(float *x, int n, float *output_sigmoid_
     check_error(cudaPeekAtLastError());
 }
 
+// https://github.com/BVLC/caffe/blob/04ab089db018a292ae48d51732dd6c66766b36b6/src/caffe/layers/swish_layer.cu#L28-L30
+__global__ void gradient_array_swish_kernel(float *x, int n, float *sigmoid_gpu, float *delta)
+{
+    int i = (blockIdx.x + blockIdx.y*gridDim.x) * blockDim.x + threadIdx.x;
+    if (i < n) {
+        float swish = x[i];
+        delta[i] *= swish + sigmoid_gpu[i] * (1 - swish); // gradient_kernel(x[i], a);
+    }
+}
+
+extern "C" void gradient_array_swish_gpu(float *x, int n, float *sigmoid_gpu, float *delta)
+{
+    //const int num_blocks = get_number_of_blocks(n, BLOCK);
+    //gradient_array_swish_kernel << <cuda_gridsize(n), BLOCK, 0, get_cuda_stream() >> > (x, n, sigmoid_gpu, delta);
+    gradient_array_swish_kernel <<<cuda_gridsize(n), BLOCK>>> (x, n, sigmoid_gpu, delta);
+    //CHECK_CUDA(cudaPeekAtLastError());
+    check_error(cudaPeekAtLastError());
+}
+
 __global__ void activate_array_kernel(float *x, int n, ACTIVATION a)
 {
     int i = (blockIdx.x + blockIdx.y*gridDim.x) * blockDim.x + threadIdx.x;

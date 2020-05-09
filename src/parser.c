@@ -306,6 +306,29 @@ int *parse_yolo_mask(char *a, int *num)
     return mask;
 }
 
+float *get_classes_multipliers(char *cpc, const int classes)
+{
+    float *classes_multipliers = NULL;
+    if (cpc) {
+        int classes_counters = classes;
+        int *counters_per_class = parse_yolo_mask(cpc, &classes_counters);
+        if (classes_counters != classes) {
+            printf(" number of values in counters_per_class = %d doesn't match with classes = %d \n", classes_counters, classes);
+            exit(0);
+        }
+        float max_counter = 0;
+        int i;
+        for (i = 0; i < classes_counters; ++i) if (max_counter < counters_per_class[i]) max_counter = counters_per_class[i];
+        classes_multipliers = (float *)calloc(classes_counters, sizeof(float));
+        for (i = 0; i < classes_counters; ++i) classes_multipliers[i] = max_counter / counters_per_class[i];
+        free(counters_per_class);
+        printf(" classes_multipliers: ");
+        for (i = 0; i < classes_counters; ++i) printf("%.1f, ", classes_multipliers[i]);
+        printf("\n");
+    }
+    return classes_multipliers;
+}
+
 layer parse_yolo(list *options, size_params params)
 {
     int classes = option_find_int(options, "classes", 20);
@@ -317,11 +340,29 @@ layer parse_yolo(list *options, size_params params)
     layer l = make_yolo_layer(params.batch, params.w, params.h, num, total, mask, classes);
     assert(l.outputs == params.inputs);
 
+    char *cpc = option_find_str(options, "counters_per_class", 0);
+    l.classes_multipliers = get_classes_multipliers(cpc, classes);
+    l.label_smooth_eps = option_find_float_quiet(options, "label_smooth_eps", 0.0f);
+    l.scale_x_y = option_find_float_quiet(options, "scale_x_y", 1);
+    l.max_delta = option_find_float_quiet(options, "max_delta", FLT_MAX);   // set 10
+    l.iou_normalizer = option_find_float_quiet(options, "iou_normalizer", 0.75);
+    l.cls_normalizer = option_find_float_quiet(options, "cls_normalizer", 1);
+    char *iou_loss = option_find_str_quiet(options, "iou_loss", "mse");   //  "iou");
+    if (strcmp(iou_loss, "mse") == 0) l.iou_loss = MSE;
+    else if (strcmp(iou_loss, "giou") == 0) l.iou_loss = GIOU;
+    else if (strcmp(iou_loss, "diou") == 0) l.iou_loss = DIOU;
+    else if (strcmp(iou_loss, "ciou") == 0) l.iou_loss = CIOU;
+    else l.iou_loss = IOU;
+    fprintf(stderr, "[yolo] params: iou loss: %s (%d), iou_norm: %2.2f, cls_norm: %2.2f, scale_x_y: %2.2f\n",
+        iou_loss, l.iou_loss, l.iou_normalizer, l.cls_normalizer, l.scale_x_y);
+
     l.max_boxes = option_find_int_quiet(options, "max",90);
     l.jitter = option_find_float(options, "jitter", .2);
+    l.focal_loss = option_find_int_quiet(options, "focal_loss", 0);
 
     l.ignore_thresh = option_find_float(options, "ignore_thresh", .5);
     l.truth_thresh = option_find_float(options, "truth_thresh", 1);
+    l.iou_thresh = option_find_float_quiet(options, "iou_thresh", 1); // recommended to use iou_thresh=0.213 in [yolo]
     l.random = option_find_int_quiet(options, "random", 0);
 
     char *map_file = option_find_str(options, "map", 0);
@@ -552,6 +593,7 @@ layer parse_shortcut(list *options, size_params params, network *net)
 
     char *activation_s = option_find_str(options, "activation", "linear");
     ACTIVATION activation = get_activation(activation_s);
+    assert(activation != SWISH); // Not Supports SWISH in shortcut layer
     s.activation = activation;
     s.alpha = option_find_float_quiet(options, "alpha", 1);
     s.beta = option_find_float_quiet(options, "beta", 1);
@@ -702,6 +744,10 @@ void parse_net_options(list *options, network *net)
     net->inputs = option_find_int_quiet(options, "inputs", net->h * net->w * net->c);
     net->max_crop = option_find_int_quiet(options, "max_crop",net->w*2);
     net->min_crop = option_find_int_quiet(options, "min_crop",net->w);
+    net->flip = option_find_int_quiet(options, "flip", 1);
+    net->blur = option_find_int_quiet(options, "blur", 0);
+    net->mixup = option_find_int_quiet(options, "mixup", 0);
+    net->letter_box = option_find_int_quiet(options, "letter_box", 0);
     net->max_ratio = option_find_float_quiet(options, "max_ratio", (float) net->max_crop / net->w);
     net->min_ratio = option_find_float_quiet(options, "min_ratio", (float) net->min_crop / net->w);
     net->center = option_find_int_quiet(options, "center",0);
