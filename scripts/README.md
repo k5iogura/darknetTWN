@@ -37,5 +37,5 @@ MIN     1845     3.323541 >>>>>
 -----------------------------------------------------------------------------------------------------------
 ```  
 
-Easy way to watch progress,  
+Easy way to watch progress countinuosly,  
 `$ watch -n 5 './scripts/avgout.py [log-file]'`  
