@@ -1,6 +1,6 @@
 # scripts 
 
-### avgout.py  
+### training log viewer : avgout.py  
 
 Shows progress bar via training log.  
 
@@ -39,3 +39,16 @@ MIN     1845     3.323541 >>>>>
 
 Easy way to watch progress countinuosly,  
 `$ watch -n 5 './scripts/avgout.py [log-file]'`  
+
+### OpenImage downloader : oi_download.sh oi_label.sh  
+
+`$ mkdir work; cd work`  
+`$ ./oi_download.sh`  
+   unzip `*`.zip files  
+`$ find $(pwd) -iname \*.jpg > train.all.txt`  
+`$ ./oi_labels.sh --thresh 0.3 > ln.sh`  
+`$ mkdir JPEGImages ; cd JPEGImages`  
+`$ bash ../ln.sh`  
+
+
+download `*`.csv, `*`/zip  
