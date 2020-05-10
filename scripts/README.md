@@ -49,6 +49,7 @@ Easy way to watch progress countinuosly,
 `$ ./oi_labels.sh --thresh 0.3 > ln.sh`  
 `$ mkdir JPEGImages ; cd JPEGImages`  
 `$ bash ../ln.sh`  
+`$ ..; find $(pwd)/JPEGImages -iname \*.jpg | sort -R >train.txt`  
 
-
-download `*`.csv, `*`/zip  
+downloads `*`.csv, `*`/zip.  
+selects opcupied over 30% images and makes symbolic links in JPEGImages directory.  
