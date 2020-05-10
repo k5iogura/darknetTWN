@@ -4,7 +4,7 @@
 
 Shows progress bar via training log.  
 
-`$ avgout.py [log-file]  
+```$ avgout.py [log-file]  
 CPU: Linux/v100/3.10.0-693.21.1.el7.x86_64
 CWD: darknetTWN
 phrase to search iteration and loss: ([0-9]+):.* +([0-9.]+) *avg
@@ -35,7 +35,7 @@ loss range: 257.627747 to 3.323541
 -----------------------------------------------------------------------------------------------------------
 MIN     1845     3.323541 >>>>>
 -----------------------------------------------------------------------------------------------------------
-`  
+```  
 
 Easy way to watch progress,  
 `$ watch -n 5 './scripts/avgout.py [log-file]'`  
