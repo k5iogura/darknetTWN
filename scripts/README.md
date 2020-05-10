@@ -1,9 +1,9 @@
 # scripts 
 
 ### avgout.py  
+
 Shows progress bar via training log.  
-`$ avgout.py [log-file]`  
-`
+`$ avgout.py [log-file]
 CPU: Linux/v100/3.10.0-693.21.1.el7.x86_64
 CWD: darknetTWN
 phrase to search iteration and loss: ([0-9]+):.* +([0-9.]+) *avg
