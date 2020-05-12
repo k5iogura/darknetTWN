@@ -2,7 +2,7 @@
 #include "utils.h"
 #include "image.h"
 #include "cuda.h"
-
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -720,7 +720,7 @@ void fill_truth(char *path, char **labels, int k, float *truth)
     char *multi[1024];
     char long_labels[1024];
     for(i = 0; i < k; ++i){
-        sprintf(long_labels,"_%s.",labels[i]);
+        sprintf(long_labels,"/%s/",labels[i]);
         //if(strstr(path, labels[i])){
         if(strstr(path, long_labels)){
             multi[count] = labels[i];

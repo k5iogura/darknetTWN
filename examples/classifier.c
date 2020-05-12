@@ -259,8 +259,11 @@ void validate_classifier_10(char *datacfg, char *filename, char *weightfile)
     for(i = 0; i < m; ++i){
         int class = -1;
         char *path = paths[i];
+        char long_labels[1024];
         for(j = 0; j < classes; ++j){
-            if(strstr(path, labels[j])){
+            sprintf(long_labels,"/%s/",labels[j]);
+            if(strstr(path, long_labels)){
+            //if(strstr(path, labels[j])){
                 class = j;
                 break;
             }
