@@ -53,3 +53,9 @@ Easy way to watch progress countinuosly,
 
 downloads `*`.csv, `*`/zip.  
 selects opcupied over 30% images and makes symbolic links in JPEGImages directory.  
+
+### COCO Downloader : get_cococ_download.py  
+
+$ ./get_coco_download.py  
+see ./coco directory.  
+
