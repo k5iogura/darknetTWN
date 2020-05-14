@@ -56,6 +56,7 @@ selects opcupied over 30% images and makes symbolic links in JPEGImages director
 
 ### COCO Downloader : get_cococ_download.py  
 
-$ ./get_coco_download.py  
+`$ ./get_coco_download.py`  
+
 see ./coco directory.  
 
