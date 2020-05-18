@@ -47,17 +47,31 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
     char **paths = (char **)list_to_array(plist);
 
     load_args args = get_base_args(net);
+    args.w = net->w; //append
+    args.h = net->h; //append
+    args.c = net->c; //append
     args.coords = l.coords;
     args.paths = paths;
     args.n = imgs;
     args.m = plist->size;
     args.classes = classes;
+    args.flip = net->flip;   //append
     args.jitter = jitter;
     args.num_boxes = l.max_boxes;
+    //net.num_boxes = args.num_boxes;   //append
+    //net.train_images_num = train_images_num;  //append
     args.d = &buffer;
     args.type = DETECTION_DATA;
     //args.type = INSTANCE_DATA;
     args.threads = 64;
+
+    args.angle = net->angle; //append
+    args.blur = net->blur;   //append
+    args.mixup = net->mixup; //append
+    args.exposure = net->exposure;   //append
+    args.saturation = net->saturation;   //append
+    args.hue = net->hue; //append
+    args.letter_box = net->letter_box;   //append
 
     pthread_t load_thread = load_data(args);
     double time;
