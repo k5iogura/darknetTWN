@@ -615,7 +615,7 @@ int fill_truth_detection(char *path, int num_boxes, float *truth, int classes, i
 }
 
 
-void fill_truth_detection_pjreddie(char *path, int num_boxes, float *truth, int classes, int flip, float dx, float dy, float sx, float sy)
+/*void fill_truth_detection(char *path, int num_boxes, float *truth, int classes, int flip, float dx, float dy, float sx, float sy)
 {
     char labelpath[4096];
     find_replace(path, "images", "labels", labelpath);
@@ -656,7 +656,7 @@ void fill_truth_detection_pjreddie(char *path, int num_boxes, float *truth, int 
         truth[(i-sub)*5+4] = id;
     }
     free(boxes);
-}
+}*/
 
 #define NUMCHARS 37
 
