@@ -593,7 +593,6 @@ layer parse_shortcut(list *options, size_params params, network *net)
 
     char *activation_s = option_find_str(options, "activation", "linear");
     ACTIVATION activation = get_activation(activation_s);
-    assert(activation != SWISH); // Not Supports SWISH in shortcut layer
     s.activation = activation;
     s.alpha = option_find_float_quiet(options, "alpha", 1);
     s.beta = option_find_float_quiet(options, "beta", 1);
