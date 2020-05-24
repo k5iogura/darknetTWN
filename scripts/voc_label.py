@@ -1,3 +1,4 @@
+from subprocess import check_output
 import xml.etree.ElementTree as ET
 import pickle
 import os
@@ -42,7 +43,7 @@ def convert_annotation(year, image_id):
         bb = convert((w,h), b)
         out_file.write(str(cls_id) + " " + " ".join([str(a) for a in bb]) + '\n')
 
-wd = getcwd()
+wd = check_output(['pwd','-L']).strip()
 
 for year, image_set in sets:
     if not os.path.exists('VOCdevkit/VOC%s/labels/'%(year)):
