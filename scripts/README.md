@@ -65,7 +65,7 @@ see ./coco directory.
 Notice : pycocotools is reuired. see [pycocotools](https://github.com/cocodataset/cocoapi) to install instructions.  
 git clone https://github.com/cocodataset/cocoapi  
 For Python, run "make" under coco/PythonAPI  
-python -c "import pycocotools" # for checking installation  
+python3 -c "import pycocotools" # for checking installation  
 
 ```
  $ ./scripts/pycocoeval.py -r results/coco_results.json -g anywhere/coco/annotations/instances_val2014.json
