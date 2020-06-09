@@ -52,7 +52,7 @@ Easy way to watch progress countinuosly,
 `$ ..; find $(pwd)/JPEGImages -iname \*.jpg | sort -R >train.txt`  
 
 downloads `*`.csv, `*`/zip.  
-selects opcupied over 30% images and makes symbolic links in JPEGImages directory.  
+selects image ocuppied over 30% and makes symbolic links in JPEGImages directory.  
 
 ### COCO Downloader : get_cococ_download.py  
 
