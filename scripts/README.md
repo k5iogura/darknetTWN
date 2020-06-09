@@ -52,7 +52,7 @@ Easy way to watch progress countinuosly,
 `$ ..; find $(pwd)/JPEGImages -iname \*.jpg | sort -R >train.txt`  
 
 downloads `*`.csv, `*`/zip.  
-selects opcupied over 30% images and makes symbolic links in JPEGImages directory.  
+selects image ocuppied over 30% and makes symbolic links in JPEGImages directory.  
 
 ### COCO Downloader : get_cococ_download.py  
 
@@ -60,3 +60,15 @@ selects opcupied over 30% images and makes symbolic links in JPEGImages director
 
 see ./coco directory.  
 
+### Evaluation mAP with pycocotools : pycocoeval.py  
+
+Notice : pycocotools is reuired. see [pycocotools](https://github.com/cocodataset/cocoapi) to install instructions.  
+git clone https://github.com/cocodataset/cocoapi  
+For Python, run "make" under coco/PythonAPI  
+python3 -c "import pycocotools" # for checking installation  
+
+```
+ $ ./scripts/pycocoeval.py -r results/coco_results.json -g anywhere/coco/annotations/instances_val2014.json
+```
+
+Maybe nessesary python3-tkinter, matplotlib==2.1.0 etc.  
