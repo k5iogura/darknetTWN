@@ -44,12 +44,18 @@ for i,c in enumerate(names):
     categories.append(category)
 print('#done.')
 
+def get_image_id(j):
+    image_id = os.path.splitext(os.path.basename(j))[0]
+    image_id = int(re.sub('^.+_','',image_id))
+    return image_id
+
 # IMAGES
 print('#IMAGES...')
 images=[]
 for i,j in enumerate(voc_jpg_list):
     image ={}
     file_name = os.path.basename(j)
+    image_id = get_image_id(j)
     img = cv2.imread(j)
     h,w = img.shape[:2]
     image.setdefault( 'license'  ,3 )
@@ -57,7 +63,7 @@ for i,j in enumerate(voc_jpg_list):
     image.setdefault( 'coco_url' ,"" )
     image.setdefault( 'height'   ,h )
     image.setdefault( 'width'    ,w )
-    image.setdefault( 'id'       ,i )
+    image.setdefault( 'id'       ,image_id )
     images.append(image)
 print('#done.')
 
@@ -67,6 +73,7 @@ anns= []
 aid = 0
 for i,j in enumerate(voc_jpg_list):
     a = voc_ann_list[i]
+    image_id = get_image_id(j)
     with open(a) as f:
         H,W = images[i]['height'], images[i]['width']
         for A in f:
@@ -76,7 +83,7 @@ for i,j in enumerate(voc_jpg_list):
             ann.setdefault( 'segmentation'  ,[] )
             ann.setdefault( 'area'          ,float(w*h) )
             ann.setdefault( 'iscrowd'       ,0 )
-            ann.setdefault( 'image_id'      ,i )
+            ann.setdefault( 'image_id'      ,image_id )
             ann.setdefault( 'bbox'          ,[x,y,w,h])
             ann.setdefault( 'category_id'   ,int(cid))
             ann.setdefault( 'id'            ,int(aid))
