@@ -77,6 +77,6 @@ Maybe nessesary python3-tkinter, matplotlib==2.1.0 etc.
 
 From darknet VOC labels .txt and voc.names file to .json for pycocotools  
 ```
- $ voc2json -n data/voc.names -i 2007_test.txt -j 2007_test.json
+ $ voc2json -n data/voc.names -i anywhere/VOC/2007_test.txt -j 2007_test.json
 ```
-See 2007_test.json for pycocotools.  
+See ./2007_test.json for pycocotools.  
